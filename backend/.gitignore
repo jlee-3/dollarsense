@@ -17,6 +17,10 @@
 
 # debug
 
+# cache
+/__pycache__
+*.pyc
+
 # local env files
 .env
 .prod-env
