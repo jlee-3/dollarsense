@@ -11,6 +11,9 @@
 
 # debug
 
+# database
+*.sqlite3
+
 # local env files
 .env
 .prod-env
