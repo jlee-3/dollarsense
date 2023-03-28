@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'webapp',
     'graphene_django',
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,6 +43,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -128,3 +130,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 GRAPHENE = {
     "SCHEMA": "webapp.schema.schema",
 }
+
+# Setup CORS
+CORS_ORIGIN_ALLOW_ALL = False
+# Matches the port that Vue.js is using
+CORS_ORIGIN_WHITELIST = ("http://localhost:8080",)
