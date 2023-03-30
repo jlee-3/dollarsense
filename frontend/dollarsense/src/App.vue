@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
+import { useQuery } from '@vue/apollo-composable'
+import { expenseQueryGql } from './graphql/queries'
+
+const { result, loading, error } = useQuery(expenseQueryGql)
+
+console.log('[Home] result: ', result)
+console.log('[Home] loading: ', loading)
+
+const allExpenses = result?.value?.allExpenses
+console.log('[Home] allExpenses: ', allExpenses)
 </script>
 
 <template>
@@ -13,6 +23,8 @@ import HelloWorld from './components/HelloWorld.vue'
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <p v-if="loading">loading...</p>
+        <p v-else-if="allExpenses" class="text-blue-700 border-solid">{{ allExpenses[0] }}</p>
       </nav>
     </div>
   </header>
