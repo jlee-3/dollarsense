@@ -1,16 +1,31 @@
-<script setup lang="ts">
+<script lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
 import { useQuery } from '@vue/apollo-composable'
 import { expenseQueryGql } from './graphql/queries'
+import { ref, computed } from 'vue'
 
-const { result, loading, error } = useQuery(expenseQueryGql)
+export default {
+  setup() {
+    const { result, loading } = useQuery(
+      expenseQueryGql,
+      // variables
+      null,
+      // options
+      () => ({
+        fetchPolicy: 'cache-and-network'
+      })
+    )
 
-console.log('[Home] result: ', result)
-console.log('[Home] loading: ', loading)
+    const allExpenses = computed(() => result.value?.allExpenses ?? [])
+    console.log('[Home] result: ', allExpenses)
 
-const allExpenses = result?.value?.allExpenses
-console.log('[Home] allExpenses: ', allExpenses)
+    return {
+      loading,
+      allExpenses
+    }
+  }
+}
 </script>
 
 <template>
@@ -18,13 +33,20 @@ console.log('[Home] allExpenses: ', allExpenses)
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
 
     <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+      <!-- <HelloWorld msg="You did it!" /> -->
       <h1 class="text-3xl font-bold underline text-blue-700">Hello world!</h1>
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
         <p v-if="loading">loading...</p>
-        <p v-else-if="allExpenses" class="text-blue-700 border-solid">{{ allExpenses[0] }}</p>
+        <p
+          v-else-if="allExpenses"
+          class="text-blue-700"
+          v-for="expense of allExpenses"
+          :key="expense.title"
+        >
+          {{ expense }}
+        </p>
       </nav>
     </div>
   </header>
