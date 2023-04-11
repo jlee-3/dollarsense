@@ -1,0 +1,17 @@
+version: "3.3"
+
+services:
+  postgres:
+    container_name: dollarsense_pg
+    image: postgres
+    environment:
+      POSTGRES_USER: "test_admin"
+      POSTGRES_PASSWORD: "demo"
+      POSTGRES_DB: "dollarsense_postgres"
+      PGDATA: /data/postgres
+    volumes:
+      - ../data/postgres:/data/postgres:cached # cached hopefully solves docker desktop running insanely hot
+    ports:
+      - "5433:5433"
+    command: -p 5433
+    restart: unless-stopped

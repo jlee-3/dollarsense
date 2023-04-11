@@ -12,6 +12,9 @@
 # production
 /build
 
+# database files
+data/
+
 # misc
 .DS_Store
 
