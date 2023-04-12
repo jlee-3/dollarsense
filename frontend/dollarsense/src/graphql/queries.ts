@@ -5,6 +5,7 @@ export const expenseQueryGql = gql`
     allExpenses {
       title
       amount
+      spotRate
       currency
       category
       createdAt

@@ -21,7 +21,7 @@ data/
 # debug
 
 # cache
-/__pycache__
+__pycache__/
 *.pyc
 
 # local env files
