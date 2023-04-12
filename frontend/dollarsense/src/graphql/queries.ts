@@ -14,6 +14,18 @@ export const expenseQueryGql = gql`
   }
 `
 
+export const addExpenseMutationGql = gql`
+  mutation AddExpense($input: AddExpenseInput!) {
+    addExpense(input: $input) {
+      expense {
+        id
+        title
+        currency
+      }
+    }
+  }
+`
+
 export const exampleQueryGql = gql`
   query Example($id: String!) {
     example(id: $id) {

@@ -1,13 +1,19 @@
 <script lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
-import { useQuery } from '@vue/apollo-composable'
-import { expenseQueryGql } from './graphql/queries'
+import { useQuery, useMutation } from '@vue/apollo-composable'
+import { expenseQueryGql, addExpenseMutationGql } from './graphql/queries'
 import { ref, computed } from 'vue'
 
 export default {
   setup() {
-    const { result, loading } = useQuery(
+    const { mutate: addExpense, onDone: expenseAdded } = useMutation(addExpenseMutationGql)
+
+    const {
+      result,
+      loading,
+      refetch: refetchExpenses
+    } = useQuery(
       expenseQueryGql,
       // variables
       null,
@@ -20,9 +26,28 @@ export default {
     const allExpenses = computed(() => result.value?.allExpenses ?? [])
     console.log('[Home] result: ', allExpenses)
 
+    expenseAdded(() => {
+      refetchExpenses()
+    })
+
     return {
       loading,
-      allExpenses
+      allExpenses,
+      addExpense
+    }
+  },
+
+  methods: {
+    handleAddExpense() {
+      this.addExpense({
+        input: {
+          spotRate: 20,
+          amount: 33.33,
+          title: 'Entrance chairs',
+          category: 'Entertainment',
+          currency: 'NTD'
+        }
+      })
     }
   }
 }
@@ -34,6 +59,7 @@ export default {
 
     <div class="wrapper">
       <!-- <HelloWorld msg="You did it!" /> -->
+      <button @click="handleAddExpense">Add expense!</button>
       <h1 class="text-3xl font-bold underline text-blue-700">Hello world!</h1>
       <nav>
         <RouterLink to="/">Home</RouterLink>
@@ -45,7 +71,7 @@ export default {
           v-for="expense of allExpenses"
           :key="expense.title"
         >
-          {{ expense }}
+          {{ expense.title }} {{ expense.amount }}
         </p>
       </nav>
     </div>
