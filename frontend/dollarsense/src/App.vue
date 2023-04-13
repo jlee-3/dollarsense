@@ -1,86 +1,34 @@
 <script lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-import { useQuery, useMutation } from '@vue/apollo-composable'
-import { expenseQueryGql, addExpenseMutationGql } from './graphql/queries'
-import { ref, computed } from 'vue'
+// import HelloWorld from './components/HelloWorld.vue'
 
 export default {
-  setup() {
-    const { mutate: addExpense, onDone: expenseAdded } = useMutation(addExpenseMutationGql)
-
-    const {
-      result,
-      loading,
-      refetch: refetchExpenses
-    } = useQuery(
-      expenseQueryGql,
-      // variables
-      null,
-      // options
-      () => ({
-        fetchPolicy: 'cache-and-network'
-      })
-    )
-
-    const allExpenses = computed(() => result.value?.allExpenses ?? [])
-    console.log('[Home] result: ', allExpenses)
-
-    expenseAdded(() => {
-      refetchExpenses()
-    })
-
-    return {
-      loading,
-      allExpenses,
-      addExpense
-    }
-  },
-
-  methods: {
-    handleAddExpense() {
-      this.addExpense({
-        input: {
-          spotRate: 20,
-          amount: 33.33,
-          title: 'Entrance chairs',
-          category: 'Entertainment',
-          currency: 'NTD'
-        }
-      })
-    }
-  }
+  // components: {
+  //   HelloWorld
+  // }
 }
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  <div class="flex flex-row h-screen w-screen">
+    <header class="bg-grey-bubble w-96 p-10">
+      <!-- <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" /> -->
 
-    <div class="wrapper">
-      <!-- <HelloWorld msg="You did it!" /> -->
-      <button @click="handleAddExpense">Add expense!</button>
-      <h1 class="text-3xl font-bold underline text-blue-700">Hello world!</h1>
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-        <p v-if="loading">loading...</p>
-        <p
-          v-else-if="allExpenses"
-          class="text-blue-700"
-          v-for="expense of allExpenses"
-          :key="expense.title"
-        >
-          {{ expense.title }} {{ expense.amount }}
-        </p>
-      </nav>
-    </div>
-  </header>
+      <div class="wrapper">
+        <!-- <HelloWorld msg="You did it!" /> -->
+        <h1 class="text-3xl font-bold">Dollarsense</h1>
+        <nav class="flex flex-col">
+          <RouterLink to="/">Dashboard</RouterLink>
+          <RouterLink to="/about">Expenses</RouterLink>
+        </nav>
+      </div>
+    </header>
 
-  <RouterView />
+    <RouterView />
+  </div>
 </template>
 
-<style scoped>
+<!-- <style scoped>
 header {
   line-height: 1.5;
   max-height: 100vh;
@@ -142,4 +90,4 @@ nav a:first-of-type {
     margin-top: 1rem;
   }
 }
-</style>
+</style> -->
