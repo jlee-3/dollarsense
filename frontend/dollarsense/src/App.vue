@@ -1,6 +1,8 @@
 <script lang="ts">
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { computed } from 'vue'
+import DashboardIcon from './components/icons/IconDashboardMain.vue'
+import ExpenseIcon from './components/icons/IconExpenseMain.vue'
 // import HelloWorld from './components/HelloWorld.vue'
 
 export default {
@@ -13,34 +15,41 @@ export default {
       menuItems,
       path
     }
+  },
+  components: {
+    // HelloWorld
+    DashboardIcon,
+    ExpenseIcon
   }
-  // components: {
-  //   HelloWorld
-  // }
 }
 </script>
 
 <template>
   <div class="flex flex-row h-screen w-screen">
-    <header class="bg-grey-bubble w-96 p-20 pt-14">
+    <!-- sidebar -->
+    <header class="bg-grey-bubble w-96 pt-14">
       <!-- <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" /> -->
 
-      <div class="wrapper">
+      <div class="wrapper mx-auto w-fit">
         <!-- <HelloWorld msg="You did it!" /> -->
         <h1 class="font-logo text-4xl font-bold text-white">Dollarsense</h1>
         <br />
-        <nav class="flex flex-col">
+        <nav class="flex-col">
           <RouterLink
             :to="`${menuItem.toLowerCase()}`"
-            class="font-inter font-semibold mb-3 text-lg"
+            class="font-inter font-semibold px-4 mb-2 -ml-4 h-10 w-fit rounded-xl text-lg flex items-center hover:bg-theme-green-hover"
             :class="path.slice(1) === menuItem.toLowerCase() ? 'text-theme-green' : 'text-white'"
             v-for="menuItem of menuItems"
-            >{{ menuItem }}</RouterLink
           >
+            <DashboardIcon v-if="menuItem.toLowerCase() === 'dashboard'" class="mr-2" />
+            <ExpenseIcon v-else-if="menuItem.toLowerCase() === 'expenses'" class="mr-2" />
+            {{ menuItem }}
+          </RouterLink>
         </nav>
       </div>
     </header>
 
+    <!-- page -->
     <RouterView />
   </div>
 </template>
