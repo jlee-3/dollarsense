@@ -1,8 +1,19 @@
 <script lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { computed } from 'vue'
 // import HelloWorld from './components/HelloWorld.vue'
 
 export default {
+  setup() {
+    const menuItems = ['Dashboard', 'Expenses']
+    const route = useRoute()
+    const path = computed(() => route.path)
+
+    return {
+      menuItems,
+      path
+    }
+  }
   // components: {
   //   HelloWorld
   // }
@@ -11,15 +22,21 @@ export default {
 
 <template>
   <div class="flex flex-row h-screen w-screen">
-    <header class="bg-grey-bubble w-96 p-10">
+    <header class="bg-grey-bubble w-96 p-20 pt-14">
       <!-- <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" /> -->
 
       <div class="wrapper">
         <!-- <HelloWorld msg="You did it!" /> -->
-        <h1 class="text-3xl font-bold">Dollarsense</h1>
+        <h1 class="font-logo text-4xl font-bold text-white">Dollarsense</h1>
+        <br />
         <nav class="flex flex-col">
-          <RouterLink to="/">Dashboard</RouterLink>
-          <RouterLink to="/about">Expenses</RouterLink>
+          <RouterLink
+            :to="`${menuItem.toLowerCase()}`"
+            class="font-inter font-semibold mb-3 text-lg"
+            :class="path.slice(1) === menuItem.toLowerCase() ? 'text-theme-green' : 'text-white'"
+            v-for="menuItem of menuItems"
+            >{{ menuItem }}</RouterLink
+          >
         </nav>
       </div>
     </header>

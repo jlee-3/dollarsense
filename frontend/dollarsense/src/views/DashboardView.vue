@@ -52,7 +52,7 @@ export default {
 </script>
 
 <template>
-  <main class="bg-dark-background w-screen">
+  <main class="bg-dark-background w-screen p-14">
     <!-- <TheWelcome /> -->
     <h1>Dashboard</h1>
     <button @click="handleAddExpense" class="bg-lime-500 text-teal-50">Add expense!</button>
