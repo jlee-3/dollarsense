@@ -3,6 +3,7 @@ import { gql } from '@apollo/client/core'
 export const expenseQueryGql = gql`
   query AllExpenses {
     allExpenses {
+      id
       title
       amount
       spotRate

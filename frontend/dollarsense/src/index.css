@@ -1,3 +1,27 @@
 @tailwind base;
+
+/* Edit scrollbar. See https://scottspence.com/posts/change-scrollbar-color-tailwind-css */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #38363e #1b1b1c;
+}
+
+/* Edit scrollbar: Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 25px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #1b1b1c;
+  /* border-radius: 5px; */
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #38363e;
+  border-radius: 14px;
+  border: 8px solid #1b1b1c;
+}
+
 @tailwind components;
 @tailwind utilities;

@@ -37,7 +37,7 @@ export default {
         <nav class="flex-col">
           <RouterLink
             :to="`${menuItem.toLowerCase()}`"
-            class="font-inter font-semibold px-4 mb-2 -ml-4 h-10 w-fit rounded-xl text-lg flex items-center hover:bg-theme-green-hover"
+            class="font-main font-semibold px-4 mb-2 -ml-4 h-10 w-fit rounded-xl text-lg flex items-center hover:bg-theme-green-hover"
             :class="path.slice(1) === menuItem.toLowerCase() ? 'text-theme-green' : 'text-white'"
             v-for="menuItem of menuItems"
           >
