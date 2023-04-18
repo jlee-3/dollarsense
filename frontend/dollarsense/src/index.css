@@ -25,3 +25,9 @@
 
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .line-gradient-gray {
+    @apply bg-gradient-to-r from-grey-bubble via-[#38363E] to-grey-bubble;
+  }
+}

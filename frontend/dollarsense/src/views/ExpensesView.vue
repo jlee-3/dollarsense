@@ -1,5 +1,6 @@
 <script lang="ts">
 import Button from '../components/ButtonMain.vue'
+import Modal from '../components/Modal.vue'
 import { useQuery, useMutation } from '@vue/apollo-composable'
 import { expenseQueryGql, addExpenseMutationGql } from '../graphql/queries'
 import { ref, computed, h } from 'vue'
@@ -63,7 +64,16 @@ export default {
       columns
     }
   },
+  data() {
+    return {
+      isModalOpen: false,
+      showModal: false
+    }
+  },
   methods: {
+    handleOpenExpenseModal() {
+      this.showModal = true
+    },
     handleAddExpense() {
       console.log('[handleAddExpense] adding expense!')
       // this.addExpense({
@@ -81,7 +91,8 @@ export default {
     }
   },
   components: {
-    Button
+    Button,
+    Modal
   }
 }
 </script>
@@ -91,12 +102,12 @@ export default {
     <div class="bg-grey-bubble w-full h-full rounded-3xl p-12">
       <div class="flex justify-between">
         <h1 class="font-main font-medium text-2xl text-soft-white">Expenses</h1>
-        <Button @click="handleAddExpense" text="New Expense" />
+        <Button @click="handleOpenExpenseModal" text="New Expense" />
       </div>
 
       <div class="my-8 overflow-y-scroll h-5/6">
         <table class="w-full">
-          <thead class="sticky top-0 z-10 bg-grey-bubble">
+          <thead class="sticky top-0 z-[1] bg-grey-bubble">
             <tr class="">
               <td
                 class="font-main font-medium text-base text-soft-gray pb-2"
@@ -144,6 +155,19 @@ export default {
         </table>
       </div>
     </div>
+
+    <Modal
+      title="Add Expense"
+      :show-modal="showModal"
+      @close="() => (showModal = false)"
+      :class="`${!showModal ? 'opacity-0 scale-125 duration-300 -z-[1]' : 'z-[2]'}`"
+    >
+      <hr class="h-0.5 border-none my-4 line-gradient-gray" />
+      <div class="flex justify-end items-center">
+        <a class="text-soft-white mr-8" @click="() => (showModal = false)">Cancel</a>
+        <Button text="Save"></Button>
+      </div>
+    </Modal>
   </main>
 </template>
 
