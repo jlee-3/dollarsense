@@ -23,6 +23,10 @@
   border: 8px solid #1b1b1c;
 }
 
+.time-picker::-webkit-scrollbar {
+  width: 0px;
+}
+
 @tailwind components;
 @tailwind utilities;
 
@@ -30,4 +34,32 @@
   .line-gradient-gray {
     @apply bg-gradient-to-r from-grey-bubble via-[#38363E] to-grey-bubble;
   }
+}
+
+/* Vue3 datepicker styling https://icehaunter.github.io/vue3-datepicker/ */
+.v3dp__popout {
+  margin-top: 8px;
+  margin-left: -20px;
+}
+
+:root {
+  --vdp-bg-color: #38363e;
+  --vdp-text-color: #d6d6d6;
+  --vdp-box-shadow: 0 4px 10px 0 rgba(128, 144, 160, 0.1), 0 0 1px 0 rgba(128, 144, 160, 0.81);
+  --vdp-border-radius: 5px;
+  --vdp-heading-size: 2.5em;
+  --vdp-heading-weight: bold;
+  --vdp-heading-hover-color: #283e32;
+  --vdp-arrow-color: currentColor;
+  --vdp-elem-color: currentColor;
+  --vdp-disabled-color: #666470;
+  --vdp-hover-color: #ffffff;
+  --vdp-hover-bg-color: #03c988;
+  --vdp-selected-color: #ffffff;
+  --vdp-selected-bg-color: #03c988;
+  --vdp-current-date-outline-color: #03c988;
+  --vdp-current-date-font-weight: bold;
+  --vdp-elem-font-size: 0.8em;
+  --vdp-elem-border-radius: 5px;
+  --vdp-divider-color: #403e49;
 }
