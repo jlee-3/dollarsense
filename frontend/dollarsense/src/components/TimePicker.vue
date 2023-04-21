@@ -38,8 +38,13 @@ export default {
 
     const scrollToElement = (timeValue: string) => {
       const [hour, minute, amPm] = timeValue.split(':')
+      const processedMinute =
+        minute.match(/^0/) && minute.length === 2 && parseInt(minute) < 10
+          ? minute.slice(1)
+          : minute
+
       const hourElement = document.getElementById('h' + hour)?.scrollIntoView()
-      const minuteElement = document.getElementById('m' + minute)?.scrollIntoView()
+      const minuteElement = document.getElementById('m' + processedMinute)?.scrollIntoView()
     }
 
     return {
@@ -68,10 +73,11 @@ export default {
       this.openStatus = false
       this.$emit('close')
     },
-    handleClick(event: any, type: string) {
+    handleClick(event: any, type: 'hours' | 'minutes' | 'amPm') {
       const [currentHour, currentMinute, currentAmPm] = this.setTime.split(':')
       const hour = type === 'hours' ? event.target.value : currentHour
-      const minute = type === 'minutes' ? event.target.value : currentMinute
+      let minute = type === 'minutes' ? event.target.value : currentMinute
+      minute = minute !== '0' ? minute.replace(/^0/, '') : minute
       const amPm = type === 'amPm' ? event.target.value : currentAmPm
 
       if (type === 'amPm' && event.target.value !== this.amPm[0]) {
@@ -155,7 +161,8 @@ export default {
         v-for="minute of minutes"
         @click="(e) => handleClick(e, 'minutes')"
         :class="`hover:bg-theme-green-hover p-0.5 px-1.5 pt-1 mb-1 text-xs mr-1.5 rounded-md ${
-          minute.toString() === setTime.split(':')[1] && 'bg-theme-green text-white'
+          minute.toString() === setTime.split(':')[1].replace(/^0/, '') &&
+          'bg-theme-green text-white'
         }`"
       >
         {{ minute < 10 ? '0' + minute : minute }}
