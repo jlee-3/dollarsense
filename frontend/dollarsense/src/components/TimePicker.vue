@@ -1,29 +1,10 @@
 <script lang="ts">
 import Close from './icons/IconClose.vue'
 
-const clickOutside = {
-  beforeMount: (el: any, binding: any) => {
-    el.clickOutsideEvent = (event: any) => {
-      // check that click occurs outside the el and its children
-      // and if it did, call method provided in attribute value
-      if (!(el == event.target || el.contains(event.target))) {
-        binding.value()
-      }
-    }
-    document.addEventListener('click', el.clickOutsideEvent)
-  },
-  unmounted: (el: any) => {
-    document.removeEventListener('click', el.clickOutsideEvent)
-  }
-}
-
 export default {
   props: {
     currentTime: String,
     isOpen: Boolean
-  },
-  directives: {
-    clickOutside
   },
   setup(props) {
     const createDebounce = () => {

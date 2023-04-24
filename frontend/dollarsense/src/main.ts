@@ -26,4 +26,22 @@ const app = createApp({
 })
 
 app.use(router)
+
+const clickOutside = {
+  beforeMount: (el: any, binding: any) => {
+    el.clickOutsideEvent = (event: any) => {
+      // check that click occurs outside the el and its children
+      // and if it did, call method provided in attribute value
+      if (!(el == event.target || el.contains(event.target))) {
+        binding.value()
+      }
+    }
+    document.addEventListener('click', el.clickOutsideEvent)
+  },
+  unmounted: (el: any) => {
+    document.removeEventListener('click', el.clickOutsideEvent)
+  }
+}
+app.directive('clickOutside', clickOutside)
+
 app.mount('#app')
