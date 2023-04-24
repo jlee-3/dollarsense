@@ -6,6 +6,7 @@ module.exports = {
       colors: {
         'grey-bubble': '#1B1B1C',
         'grey-pill': '#38363E',
+        'grey-pill-darker': '#222225',
         'dark-background': '#131416',
         'theme-green': '#03C988',
         'theme-green-hover': 'rgba(3, 201, 136, 0.2)',
@@ -18,6 +19,9 @@ module.exports = {
       logo: ['"Saira Condensed"'],
       main: ['Inter'],
       numeric: ['"Roboto Mono"']
+    },
+    dropShadow: {
+      'grey-pill': '0 35px 35px rgba(0, 0, 0, 0.25)'
     }
   },
   plugins: []

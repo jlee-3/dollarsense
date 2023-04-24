@@ -118,7 +118,7 @@ export default {
 <template>
   <div
     v-click-outside="handleClickOutside"
-    class="bg-grey-pill h-[92px] absolute top-9 z-10 p-2 rounded-md flex flex-row justify-between flex-nowrap"
+    class="bg-grey-pill h-[92px] absolute top-9 z-10 p-2 rounded-md flex flex-row justify-between flex-nowrap drop-shadow-grey-pill"
   >
     <div v-on:scroll="onScroll" class="time-picker flex flex-col overflow-y-scroll box-content">
       <button

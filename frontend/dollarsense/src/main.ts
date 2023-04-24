@@ -5,6 +5,7 @@ import { ApolloClient, ApolloLink, InMemoryCache, createHttpLink } from '@apollo
 import { ApolloClients } from '@vue/apollo-composable'
 import './index.css'
 import './assets/main.css'
+import { vMaska } from 'maska'
 
 // HTTP connection to the API
 const httpLink = createHttpLink({
@@ -26,6 +27,7 @@ const app = createApp({
 })
 
 app.use(router)
+app.directive('maska', vMaska)
 
 const clickOutside = {
   beforeMount: (el: any, binding: any) => {
