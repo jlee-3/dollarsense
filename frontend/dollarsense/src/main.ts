@@ -6,6 +6,7 @@ import { ApolloClients } from '@vue/apollo-composable'
 import './index.css'
 import './assets/main.css'
 import { vMaska } from 'maska'
+import Notifications from '@kyvg/vue3-notification'
 
 // HTTP connection to the API
 const httpLink = createHttpLink({
@@ -27,6 +28,7 @@ const app = createApp({
 })
 
 app.use(router)
+app.use(Notifications)
 app.directive('maska', vMaska)
 
 const clickOutside = {

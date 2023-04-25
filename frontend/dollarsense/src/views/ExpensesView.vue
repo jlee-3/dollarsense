@@ -10,8 +10,11 @@ import CalendarIcon from '../components/icons/IconCalendar.vue'
 import TimePicker from '../components/TimePicker.vue'
 import Close from '../components/icons/IconClose.vue'
 import DownV from '../components/icons/IconDownV.vue'
+import CircleCheck from '../components/icons/IconCircleCheck.vue'
 import Dropdown from '../components/Dropdown.vue'
 import { countryCodes } from '../data/CountryCodes'
+import { useNotification } from '@kyvg/vue3-notification'
+const { notify } = useNotification()
 
 export default {
   setup() {
@@ -107,6 +110,7 @@ export default {
       console.log('[handleAddExpense] amount: ', this.amount)
       console.log('[handleAddExpense] currentCurrency: ', this.currentCurrency)
       console.log('[handleAddExpense] description: ', this.description)
+
       // this.addExpense({
       //   input: {
       //     spotRate: 20,
@@ -116,6 +120,14 @@ export default {
       //     currency: 'NTD'
       //   }
       // })
+
+      notify({
+        type: 'success',
+        title: 'Authorization',
+        text: 'You have been logged in!'
+      })
+
+      this.showModal = false
     },
     formatDate(value: string) {
       return moment(value).format('lll')
@@ -153,7 +165,8 @@ export default {
     TimePicker,
     Close,
     DownV,
-    Dropdown
+    Dropdown,
+    CircleCheck
   }
 }
 </script>
@@ -307,6 +320,16 @@ export default {
       </div>
     </Modal>
   </main>
+  <notifications position="top center" width="200px">
+    <template #body="props">
+      <div
+        class="bg-grey-pill text-soft-white mt-5 p-2 rounded-md flex flex-row items-center justify-center"
+      >
+        <CircleCheck class="text-theme-green mr-2" />
+        <p>Successfully Added!</p>
+      </div>
+    </template>
+  </notifications>
 </template>
 
 <style></style>
