@@ -4,6 +4,7 @@ import Modal from '../components/Modal.vue'
 import { useQuery, useMutation } from '@vue/apollo-composable'
 import { expenseQueryGql, addExpenseMutationGql } from '../graphql/queries'
 import { ref, computed, h } from 'vue'
+import { Icon } from '@iconify/vue'
 import moment from 'moment'
 import Datepicker from 'vue3-datepicker'
 import CalendarIcon from '../components/icons/IconCalendar.vue'
@@ -13,6 +14,7 @@ import DownV from '../components/icons/IconDownV.vue'
 import CircleCheck from '../components/icons/IconCircleCheck.vue'
 import Dropdown from '../components/Dropdown.vue'
 import { countryCodes } from '../data/CountryCodes'
+import { defaultCategories } from '../data/DefaultCategories'
 import { useNotification } from '@kyvg/vue3-notification'
 const { notify } = useNotification()
 
@@ -77,7 +79,8 @@ export default {
       columns,
       date,
       amountRef,
-      countryCodes
+      countryCodes,
+      defaultCategories
     }
   },
   data() {
@@ -86,12 +89,16 @@ export default {
       showModal: false,
       showTimePicker: false,
       showCurrencyPicker: false,
+      showCategoryPicker: false,
+      showSubCategoryPicker: false,
       currentTime: moment().format('LT'),
       amount: '',
       description: '',
       isAmountInputFocused: false,
       currentCurrency: 'NTD',
-      currencies: ['NTD', 'AUD', 'USD']
+      currencies: ['NTD', 'AUD', 'USD'],
+      currentCategory: 'Category',
+      currentSubCategory: 'Subcategory'
     }
   },
   computed: {
@@ -100,11 +107,16 @@ export default {
     }
   },
   methods: {
+    capitalizeFirstLetter(text: string) {
+      return text.charAt(0).toUpperCase() + text.slice(1)
+    },
     handleOpenExpenseModal() {
       this.showModal = true
     },
     handleAddExpense() {
       console.log('[handleAddExpense] adding expense!')
+      console.log('[handleAddExpense] currentCategory: ', this.currentCategory)
+      console.log('[handleAddExpense] currentSubCategory: ', this.currentSubCategory)
       console.log('[handleAddExpense] date: ', this.date)
       console.log('[handleAddExpense] currentTime: ', this.currentTime)
       console.log('[handleAddExpense] amount: ', this.amount)
@@ -123,8 +135,7 @@ export default {
 
       notify({
         type: 'success',
-        title: 'Authorization',
-        text: 'You have been logged in!'
+        text: 'Successfully Added!'
       })
 
       this.showModal = false
@@ -155,6 +166,33 @@ export default {
     getFlagUrl(currency: string) {
       const flagCode = this.getFlagCode(currency)
       return `https://api.iconify.design/circle-flags:${flagCode}.svg`
+    },
+    getCategoryIcon(category: string) {
+      return `solar:${defaultCategories[category].icon}`
+    },
+    setCategory(category: string) {
+      this.currentCategory = category
+      this.showCategoryPicker = false
+
+      if (
+        !defaultCategories[this.currentCategory].subCategories.includes(this.currentSubCategory)
+      ) {
+        this.currentSubCategory = 'Subcategory'
+      }
+    },
+    setSubCategory(subCategory: string) {
+      this.currentSubCategory = subCategory
+      this.showSubCategoryPicker = false
+    },
+    handleSubCategoryClick() {
+      if (this.currentCategory !== 'Category') {
+        this.showSubCategoryPicker = true
+      } else {
+        notify({
+          type: 'warn',
+          text: 'Select a category first!'
+        })
+      }
     }
   },
   components: {
@@ -166,7 +204,8 @@ export default {
     Close,
     DownV,
     Dropdown,
-    CircleCheck
+    CircleCheck,
+    Icon
   }
 }
 </script>
@@ -236,20 +275,99 @@ export default {
       @close="() => (showModal = false)"
       :class="`${!showModal ? 'opacity-0 scale-125 duration-300 -z-[1]' : 'z-[2]'}`"
     >
+      <div class="flex flex-row mt-5">
+        <div class="mr-6">
+          <button
+            @click="() => (showCategoryPicker = true)"
+            class="items-center bg-grey-pill p-1.5 pl-4 pr-3 rounded-xl flex flex-row hover:bg-grey-pill-highlight transition"
+          >
+            <p class="text-main text-sm font-light leading-3">
+              {{ capitalizeFirstLetter(currentCategory) }}
+            </p>
+            <DownV class="ml-1" />
+          </button>
+          <Dropdown
+            :is-open="showCategoryPicker"
+            @close="() => (showCategoryPicker = false)"
+            :class="`ml-4 top-8 h-max w-max pl-[18px] py-[18px] ${!showCategoryPicker && 'hidden'}`"
+          >
+            <div
+              class="dropdown hover:overflow-y-scroll hover:pr-0 overflow-hidden pr-[18px] h-[220px] w-[300px] flex flex-row flex-wrap"
+            >
+              <div
+                v-for="category in Object.keys(defaultCategories)"
+                class="flex flex-col items-center w-max px-2 rounded-md mb-1 basis-1/3"
+              >
+                <button
+                  @click="(e) => setCategory(category)"
+                  :class="`bg-[#4D4B55] rounded-lg p-5 hover:bg-theme-green-hover
+                  ${currentCategory === category && 'bg-theme-green'}`"
+                >
+                  <Icon class="text-4xl" :icon="getCategoryIcon(category)" />
+                </button>
+                <p class="my-2 font-main font-light text-xs text-soft-white">
+                  {{ capitalizeFirstLetter(category) }}
+                </p>
+              </div>
+            </div>
+          </Dropdown>
+        </div>
+        <div>
+          <button
+            @click="handleSubCategoryClick"
+            class="items-center bg-grey-pill p-1.5 pl-4 pr-3 rounded-2xl flex flex-row hover:bg-grey-pill-highlight transition"
+          >
+            <p class="text-main text-sm font-light leading-3">{{ currentSubCategory }}</p>
+            <DownV class="ml-1" />
+          </button>
+          <Dropdown
+            v-if="currentCategory !== 'Category'"
+            :is-open="showSubCategoryPicker"
+            @close="() => (showSubCategoryPicker = false)"
+            :class="`ml-4 top-8 h-max w-max pl-[18px] pt-[18px] ${
+              !showSubCategoryPicker && 'hidden'
+            }`"
+          >
+            <div
+              class="dropdown hover:overflow-y-scroll hover:pr-0 overflow-hidden pr-[18px] min-h-fit max-h-[132px] w-[250px] flex flex-row flex-wrap"
+            >
+              <div
+                v-for="subCategory in defaultCategories[currentCategory].subCategories"
+                class="flex flex-col items-center w-max px-2 rounded-md mb-3"
+              >
+                <button
+                  @click="(e) => setSubCategory(subCategory)"
+                  :class="`bg-[#4D4B55] rounded-xl px-4 hover:bg-theme-green-hover
+                  ${currentSubCategory === capitalizeFirstLetter(subCategory) && 'bg-theme-green'}`"
+                >
+                  <p class="my-2 font-main font-light text-xs text-soft-white">
+                    {{ capitalizeFirstLetter(subCategory) }}
+                  </p>
+                </button>
+              </div>
+            </div>
+          </Dropdown>
+        </div>
+      </div>
+
       <hr class="h-0.5 border-none my-4 line-gradient-gray" />
+
       <div class="flex flex-row">
         <div
-          class="flex flex-row bg-grey-pill items-center p-0.5 pl-4 rounded-2xl w-fit text-soft-gray mr-6"
+          class="flex flex-row bg-grey-pill items-center p-0.5 pl-4 rounded-2xl w-fit text-soft-gray mr-6 hover:bg-grey-pill-highlight transition"
         >
           <CalendarIcon class="mr-2" />
-          <Datepicker v-model="date" class="bg-transparent border-0 outline-0 w-[100px]" />
+          <Datepicker
+            v-model="date"
+            class="bg-transparent border-0 outline-0 w-[100px] text-main text-sm font-light leading-3"
+          />
         </div>
         <div class="flex flex-row">
           <button
             @click="() => (showTimePicker = true)"
-            class="items-center bg-grey-pill p-1 pl-4 pr-3 rounded-2xl flex flex-row"
+            class="items-center bg-grey-pill p-1 pl-4 pr-3 rounded-2xl flex flex-row hover:bg-grey-pill-highlight transition"
           >
-            {{ currentTime }}
+            <p class="text-main text-sm font-light leading-3">{{ currentTime }}</p>
             <DownV class="ml-1" />
           </button>
           <TimePicker
@@ -281,22 +399,22 @@ export default {
         <div class="ml-6">
           <button
             @click="() => (showCurrencyPicker = true)"
-            class="flex flex-row items-center bg-grey-pill rounded-xl p-2 px-3"
+            class="flex flex-row items-center bg-grey-pill rounded-xl p-2.5 px-3 hover:bg-grey-pill-highlight transition"
           >
             <img :src="getFlagUrl(currentCurrency)" class="mr-2" />
-            {{ currentCurrency }}
+            <p class="text-main text-sm font-normal leading-3">{{ currentCurrency }}</p>
             <DownV class="ml-1" />
           </button>
           <Dropdown
             :is-open="showCurrencyPicker"
             @close="() => (showCurrencyPicker = false)"
-            :class="`h-max ${!showCurrencyPicker && 'hidden'}`"
+            :class="`h-max ml-3 flex flex-col top-11 ${!showCurrencyPicker && 'hidden'}`"
           >
             <button
               :value="currency"
               v-for="currency in currencies"
               @click="setCurrency"
-              :class="`hover:bg-theme-green-hover flex flex-row items-center w-max px-2 rounded-sm mb-1
+              :class="`hover:bg-theme-green-hover flex flex-row items-center w-max px-2 rounded-md mb-1
               ${currentCurrency === currency && 'text-theme-green'}`"
             >
               <img :src="getFlagUrl(currency)" class="mr-2" />
@@ -320,13 +438,18 @@ export default {
       </div>
     </Modal>
   </main>
-  <notifications position="top center" width="200px">
+  <notifications position="top center" width="250px">
     <template #body="props">
       <div
         class="bg-grey-pill text-soft-white mt-5 p-2 rounded-md flex flex-row items-center justify-center"
       >
-        <CircleCheck class="text-theme-green mr-2" />
-        <p>Successfully Added!</p>
+        <CircleCheck v-if="props.item.type === 'success'" class="text-theme-green mr-2" />
+        <Icon
+          v-else-if="props.item.type === 'warn'"
+          icon="solar:danger-circle-linear"
+          class="mr-2 text-theme-orange"
+        />
+        <p>{{ props.item.text }}</p>
       </div>
     </template>
   </notifications>

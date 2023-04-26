@@ -27,6 +27,21 @@
   width: 0px;
 }
 
+.dropdown::-webkit-scrollbar {
+  width: 18px;
+}
+
+.dropdown::-webkit-scrollbar-thumb {
+  background-color: #4d4b55;
+  border-radius: 12px;
+  border: 4px solid #38363e;
+}
+
+.dropdown::-webkit-scrollbar-track {
+  background: #38363e;
+  /* border-radius: 5px; */
+}
+
 @tailwind components;
 @tailwind utilities;
 

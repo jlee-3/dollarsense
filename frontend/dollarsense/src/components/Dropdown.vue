@@ -39,7 +39,7 @@ export default {
 <template>
   <div
     v-click-outside="handleClickOutside"
-    class="bg-grey-pill h-[92px] absolute top-11 z-20 p-2 rounded-md flex flex-col"
+    class="bg-grey-pill absolute z-10 p-2 rounded-md shadow-lg shadow-dark-background/50"
   >
     <slot></slot>
   </div>
