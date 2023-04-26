@@ -38,7 +38,7 @@ export default {
         input: {
           spotRate: 20,
           amount: 33.33,
-          title: 'Entrance beer',
+          description: 'Entrance beer',
           category: 'Entertainment',
           currency: 'NTD'
         }

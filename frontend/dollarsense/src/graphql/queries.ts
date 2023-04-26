@@ -4,11 +4,12 @@ export const expenseQueryGql = gql`
   query AllExpenses {
     allExpenses {
       id
-      title
+      description
       amount
       spotRate
       currency
       category
+      subCategory
       createdAt
       updatedAt
     }

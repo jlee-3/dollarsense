@@ -6,6 +6,7 @@ import { expenseQueryGql, addExpenseMutationGql } from '../graphql/queries'
 import { ref, computed, h } from 'vue'
 import { Icon } from '@iconify/vue'
 import moment from 'moment'
+import currency from 'currency.js'
 import Datepicker from 'vue3-datepicker'
 import CalendarIcon from '../components/icons/IconCalendar.vue'
 import TimePicker from '../components/TimePicker.vue'
@@ -52,7 +53,7 @@ export default {
       },
       {
         title: 'DESCRIPTION',
-        key: 'title',
+        key: 'description',
         className: 'text-blue-500'
       },
       {
@@ -80,7 +81,8 @@ export default {
       date,
       amountRef,
       countryCodes,
-      defaultCategories
+      defaultCategories,
+      currency
     }
   },
   data() {
@@ -98,7 +100,10 @@ export default {
       currentCurrency: 'NTD',
       currencies: ['NTD', 'AUD', 'USD'],
       currentCategory: 'Category',
-      currentSubCategory: 'Subcategory'
+      currentSubCategory: 'Subcategory',
+      isDescription: true,
+      isAmount: true,
+      isCategory: true
     }
   },
   computed: {
@@ -113,6 +118,25 @@ export default {
     handleOpenExpenseModal() {
       this.showModal = true
     },
+    sanitizeExpenseInput(input: Ds.Expense) {
+      const { description, amount, category } = input
+
+      if (!description || !amount || !category) {
+        if (!description) {
+          this.isDescription = false
+        }
+        if (!amount) {
+          this.isAmount = false
+          return false
+        }
+        if (!category) {
+          this.isCategory = false
+        }
+        return false
+      } else {
+        return true
+      }
+    },
     handleAddExpense() {
       console.log('[handleAddExpense] adding expense!')
       console.log('[handleAddExpense] currentCategory: ', this.currentCategory)
@@ -123,22 +147,33 @@ export default {
       console.log('[handleAddExpense] currentCurrency: ', this.currentCurrency)
       console.log('[handleAddExpense] description: ', this.description)
 
-      // this.addExpense({
-      //   input: {
-      //     spotRate: 20,
-      //     amount: 33.33,
-      //     title: 'Entrance beer',
-      //     category: 'Entertainment',
-      //     currency: 'NTD'
-      //   }
-      // })
+      const expenseInput: Ds.Expense = {
+        description: this.description,
+        amount: currency(this.amount).value,
+        currency: this.currentCurrency,
+        category: this.currentCategory,
+        subCategory: this.currentSubCategory,
+        createdAt: this.date
+      }
 
-      notify({
-        type: 'success',
-        text: 'Successfully Added!'
-      })
+      if (this.sanitizeExpenseInput(expenseInput)) {
+        // this.addExpense({
+        //   input: {
+        //     spotRate: 20,
+        //     amount: 33.33,
+        //     title: 'Entrance beer',
+        //     category: 'Entertainment',
+        //     currency: 'NTD'
+        //   }
+        // })
 
-      this.showModal = false
+        notify({
+          type: 'success',
+          text: 'Successfully Added!'
+        })
+
+        this.showModal = false
+      }
     },
     formatDate(value: string) {
       return moment(value).format('lll')
@@ -300,7 +335,7 @@ export default {
               >
                 <button
                   @click="(e) => setCategory(category)"
-                  :class="`bg-[#4D4B55] rounded-lg p-5 hover:bg-theme-green-hover
+                  :class="`bg-[#4D4B55] rounded-lg p-5 hover:bg-theme-green-hover transition
                   ${currentCategory === category && 'bg-theme-green'}`"
                 >
                   <Icon class="text-4xl" :icon="getCategoryIcon(category)" />
@@ -337,10 +372,10 @@ export default {
               >
                 <button
                   @click="(e) => setSubCategory(subCategory)"
-                  :class="`bg-[#4D4B55] rounded-xl px-4 hover:bg-theme-green-hover
+                  :class="`bg-[#4D4B55] rounded-xl px-4 hover:bg-theme-green-hover transition
                   ${currentSubCategory === capitalizeFirstLetter(subCategory) && 'bg-theme-green'}`"
                 >
-                  <p class="my-2 font-main font-light text-xs text-soft-white">
+                  <p class="my-2 font-main font-normal text-xs text-soft-white">
                     {{ capitalizeFirstLetter(subCategory) }}
                   </p>
                 </button>
@@ -391,7 +426,19 @@ export default {
           @blur="formatAmount"
           @focus="() => (isAmountInputFocused = true)"
           @keydown.enter="blurInput"
+          @input="
+            () => {
+              if (!isAmount) isAmount = true
+            }
+          "
         />
+        <div
+          v-if="!isAmount"
+          class="text-sm text-red-600 absolute top-10 flex flex-row items-center mt-1 ml-1"
+        >
+          <Icon icon="solar:danger-circle-linear" class="mr-1" />
+          Please add an amount!
+        </div>
         <button :class="`${amount === '' && 'invisible'}`" @click="clearInput">
           <Close class="-ml-8 text-soft-gray" width="20px" />
         </button>
@@ -424,12 +471,24 @@ export default {
         </div>
       </div>
 
-      <div class="flex flex-row items-center mt-8">
+      <div class="flex flex-col mt-8">
         <input
           class="bg-grey-pill-darker rounded-xl p-2 px-3 w-full outline-none focus:ring-2 focus:ring-theme-green text-soft-white placeholder:text-soft-gray"
           placeholder="Description"
           v-model="description"
+          @input="
+            () => {
+              if (!isDescription) isDescription = true
+            }
+          "
         />
+        <div
+          v-if="!isDescription"
+          class="text-sm text-red-600 absolute top-10 flex flex-row items-center mt-1 ml-1"
+        >
+          <Icon icon="solar:danger-circle-linear" class="mr-1" />
+          Please add a description!
+        </div>
       </div>
 
       <div class="flex justify-end items-center mt-20">
