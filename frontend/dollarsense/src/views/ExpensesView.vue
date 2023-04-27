@@ -129,13 +129,20 @@ export default {
           this.isAmount = false
           return false
         }
-        if (!category) {
-          this.isCategory = false
-        }
+        // if (category === 'Category') {
+        //   this.isCategory = false
+        // }
         return false
       } else {
         return true
       }
+    },
+    calculateDate() {
+      const date = moment(this.date).format('YYYY-MM-DD')
+      const time = moment(date + ' ' + this.currentTime).format('H:m:ssZ')
+      const dateTime = moment(date + ' ' + time).format()
+
+      return new Date(dateTime)
     },
     handleAddExpense() {
       console.log('[handleAddExpense] adding expense!')
@@ -151,21 +158,18 @@ export default {
         description: this.description,
         amount: currency(this.amount).value,
         currency: this.currentCurrency,
-        category: this.currentCategory,
+        category:
+          this.currentCategory === 'Category'
+            ? 'Uncategorized'
+            : this.capitalizeFirstLetter(this.currentCategory),
         subCategory: this.currentSubCategory,
-        createdAt: this.date
+        createdAt: this.calculateDate()
       }
 
       if (this.sanitizeExpenseInput(expenseInput)) {
-        // this.addExpense({
-        //   input: {
-        //     spotRate: 20,
-        //     amount: 33.33,
-        //     title: 'Entrance beer',
-        //     category: 'Entertainment',
-        //     currency: 'NTD'
-        //   }
-        // })
+        this.addExpense({
+          input: expenseInput
+        })
 
         notify({
           type: 'success',

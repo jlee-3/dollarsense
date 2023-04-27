@@ -21,7 +21,7 @@ export const addExpenseMutationGql = gql`
     addExpense(input: $input) {
       expense {
         id
-        title
+        description
         currency
       }
     }

@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 import uuid
 
 # Create your models here.
@@ -14,7 +15,7 @@ class Expense(models.Model):
     currency = models.CharField(max_length=3)
     category = models.CharField(max_length=30, null=True)
     subCategory = models.CharField(max_length=60, null=True)
-    createdAt = models.DateTimeField(auto_now_add=True)
+    createdAt = models.DateTimeField(default=timezone.now)
     updatedAt = models.DateTimeField(auto_now_add=True)
 
     class Meta:

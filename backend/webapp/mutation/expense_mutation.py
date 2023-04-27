@@ -14,11 +14,12 @@ class AddExpense(graphene.Mutation):
     # @classmethod
     def mutate(root, info, input=None):
         expenseEntity = models.Expense(
-            title=input.title,
+            description=input.description,
             amount=input.amount,
             spotRate=input.spotRate,
             currency=input.currency,
             category=input.category,
+            subCategory=input.subCategory,
             createdAt=input.createdAt,
             updatedAt=input.updatedAt,
         )
