@@ -12,6 +12,17 @@ class AddExpenseInput(graphene.InputObjectType):
     updatedAt = graphene.String(required=False, default_value=None)
 
 
+class EditExpenseInput(graphene.InputObjectType):
+    id = graphene.String(required=True)
+    description = graphene.String(required=False)
+    amount = graphene.Float(required=False)
+    spotRate = graphene.Float(required=False)
+    currency = graphene.String(required=False)
+    category = graphene.String(required=False)
+    subCategory = graphene.String(required=False)
+    createdAt = graphene.String(required=False)
+
+
 class DeleteExpenseInput(graphene.InputObjectType):
     id = graphene.String(required=False)
     # ids = graphene.String(required=False)

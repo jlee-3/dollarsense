@@ -2,6 +2,7 @@ import graphene
 from pprint import pprint
 from webapp import models, types
 from webapp.dto import expense
+from datetime import datetime
 
 
 class AddExpense(graphene.Mutation):
@@ -29,6 +30,29 @@ class AddExpense(graphene.Mutation):
         pprint(expenseEntity.__dict__)
 
         return AddExpense(expense=expenseEntity)
+
+
+class EditExpense(graphene.Mutation):
+    class Arguments:
+        input = expense.EditExpenseInput()
+
+    expense = graphene.Field(types.ExpenseType)
+
+    def mutate(root, info, input=None):
+        id = input.pop('id')
+        expenseEntity = models.Expense.objects.get(id=id)
+        # expenseEntity = models.Expense.objects.filter(id=id).update(**input)
+
+        for key, value in input.items():
+            setattr(expenseEntity, key, value)
+
+        setattr(expenseEntity, 'updatedAt', datetime.now())
+
+        expenseEntity.save()
+        print('editExpense expenseEntity: ')
+        pprint(expenseEntity.__dict__)
+
+        return EditExpense(expense=expenseEntity)
 
 
 class DeleteExpense(graphene.Mutation):
