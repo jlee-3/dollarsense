@@ -3,7 +3,7 @@ from pprint import pprint
 from webapp import models
 from webapp import types
 from .query.expense_query import ExpenseQuery
-from .mutation.expense_mutation import AddExpense
+from .mutation.expense_mutation import AddExpense, DeleteExpense
 
 
 class Query(ExpenseQuery, graphene.ObjectType):
@@ -15,3 +15,4 @@ class Query(ExpenseQuery, graphene.ObjectType):
 
 class Mutation(graphene.ObjectType):
     add_expense = AddExpense.Field()
+    delete_expenese = DeleteExpense.Field()

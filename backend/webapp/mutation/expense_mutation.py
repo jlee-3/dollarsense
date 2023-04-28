@@ -29,3 +29,22 @@ class AddExpense(graphene.Mutation):
         pprint(expenseEntity.__dict__)
 
         return AddExpense(expense=expenseEntity)
+
+
+class DeleteExpense(graphene.Mutation):
+    class Arguments:
+        input = expense.DeleteExpenseInput()
+
+    expense = graphene.Field(types.ExpenseType)
+
+    def mutate(root, info, input=None):
+        id = input.id
+        expenseEntity = models.Expense.objects.get(id=id)
+        returnEntity = expenseEntity
+        expenseEntity.delete()
+
+        returnEntity.id = id
+        print('DeleteExpense expenseEntity: ')
+        pprint(returnEntity.__dict__)
+
+        return DeleteExpense(expense=returnEntity)

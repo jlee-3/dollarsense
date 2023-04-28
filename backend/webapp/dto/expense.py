@@ -10,3 +10,8 @@ class AddExpenseInput(graphene.InputObjectType):
     subCategory = graphene.String(required=False, default_value=None)
     createdAt = graphene.String(required=False, default_value=None)
     updatedAt = graphene.String(required=False, default_value=None)
+
+
+class DeleteExpenseInput(graphene.InputObjectType):
+    id = graphene.String(required=False)
+    # ids = graphene.String(required=False)
