@@ -23,6 +23,7 @@ export default {
       }
     },
     handleClickOutside() {
+      // sets internal 'isOpen' state for component
       if (this.isOpen && !this.openStatus) {
         this.openStatus = true
       } else if (this.isOpen && this.openStatus) {
@@ -41,6 +42,6 @@ export default {
     v-click-outside="handleClickOutside"
     class="bg-grey-pill absolute z-10 p-2 rounded-md shadow-lg shadow-dark-background/50"
   >
-    <slot></slot>
+    <slot name="activator" :onClick="handleClose"></slot>
   </div>
 </template>

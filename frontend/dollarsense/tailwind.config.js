@@ -24,6 +24,9 @@ module.exports = {
     },
     dropShadow: {
       'grey-pill': '0 35px 60px -15px rgba(0, 0, 0, 0.3)'
+    },
+    transitionProperty: {
+      'mini-menu': 'opacity,transform'
     }
   },
   plugins: []

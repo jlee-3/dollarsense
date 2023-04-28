@@ -45,6 +45,10 @@ export default {
     const columns = [
       {
         title: '',
+        key: 'menu'
+      },
+      {
+        title: '',
         key: 'checkbox'
       },
       {
@@ -59,6 +63,10 @@ export default {
       {
         title: 'CATEGORY',
         key: 'category'
+      },
+      {
+        title: 'SUBCATEGORY',
+        key: 'subCategory'
       },
       {
         title: 'CURRENCY',
@@ -93,6 +101,9 @@ export default {
       showCurrencyPicker: false,
       showCategoryPicker: false,
       showSubCategoryPicker: false,
+      showMiniMenu: false,
+      miniMenuTop: '',
+      miniMenuId: '',
       currentTime: moment().format('LT'),
       amount: '',
       description: '',
@@ -101,6 +112,7 @@ export default {
       currencies: ['NTD', 'AUD', 'USD'],
       currentCategory: 'Category',
       currentSubCategory: 'Subcategory',
+      currentId: '',
       isDescription: true,
       isAmount: true,
       isCategory: true
@@ -232,6 +244,21 @@ export default {
           text: 'Select a category first!'
         })
       }
+    },
+    onRowHover(id: string) {
+      this.currentId = id
+    },
+    handleMiniMenuClick(event: any, id: string) {
+      this.showMiniMenu = true
+      const refName = 'ref:' + id
+      const ref: any = this.$refs[refName]
+      const refTop = ref[0].getBoundingClientRect().y
+
+      this.miniMenuTop = refTop
+      this.miniMenuId = id
+    },
+    handleDelete() {
+      console.log('[handleDelete] Deleting!')
     }
   },
   components: {
@@ -251,6 +278,33 @@ export default {
 
 <template>
   <main class="bg-dark-background w-screen p-14">
+    <Dropdown
+      :is-open="showMiniMenu"
+      @close="
+        () => {
+          showMiniMenu = false
+          miniMenuId = ''
+        }
+      "
+      :style="{ top: miniMenuTop + 'px' }"
+      :class="`-ml-[60px] -mt-2 h-max w-max px-2 py-3 duration-300 transition-mini-menu
+      ${!showMiniMenu && 'opacity-0 scale-90'}`"
+    >
+      <template v-slot:activator="{ onClick }">
+        <button
+          @click="
+            () => {
+              onClick()
+              handleDelete()
+            }
+          "
+          class="flex flex-row items-center px-2 rounded-md hover:bg-theme-green-hover"
+        >
+          <Icon icon="solar:trash-bin-trash-outline" class="text-red-500 mr-2" />
+          Delete
+        </button>
+      </template>
+    </Dropdown>
     <div class="bg-grey-bubble w-full h-full rounded-3xl p-12">
       <div class="flex justify-between">
         <h1 class="font-main font-medium text-2xl text-soft-white">Expenses</h1>
@@ -271,14 +325,43 @@ export default {
           </thead>
 
           <tbody class="">
-            <tr class="hover:bg-theme-green-hover transition" v-for="expense of allExpenses">
+            <tr
+              @mouseover="
+                () => {
+                  currentId = expense['id']
+                }
+              "
+              @mouseleave="
+                () => {
+                  currentId = ''
+                }
+              "
+              :class="`transition 
+              ${miniMenuId === expense['id'] && 'bg-theme-green-hover'}
+              ${miniMenuId === '' && 'hover:bg-theme-green-hover'}`"
+              v-for="expense of allExpenses"
+            >
               <td
                 class="py-2 mb-1 first:rounded-l-md last:rounded-r-md last:pr-5"
                 v-for="column of columns"
               >
+                <button
+                  :ref="'ref:' + expense['id']"
+                  v-if="column.key === 'menu'"
+                  @click="(e) => handleMiniMenuClick(e, expense['id'])"
+                  :class="`ml-5 opacity-0 rounded-md py-1 transition 
+                  ${
+                    ((currentId === expense['id'] && miniMenuId === '') ||
+                      miniMenuId === expense['id']) &&
+                    'opacity-100'
+                  }
+                  `"
+                >
+                  <Icon icon="ph:dots-three-vertical-bold" class="text-soft-white text-xl" />
+                </button>
                 <input
-                  v-if="column.key === 'checkbox'"
-                  class="ml-5 opacity-0 hover:opacity-100 checked:opacity-100 transition"
+                  v-else-if="column.key === 'checkbox'"
+                  class="mr-3 opacity-0 hover:opacity-100 checked:opacity-100 checked:accent-theme-green transition"
                   type="checkbox"
                   :id="expense['id']"
                 />
@@ -330,25 +413,32 @@ export default {
             @close="() => (showCategoryPicker = false)"
             :class="`ml-4 top-8 h-max w-max pl-[18px] py-[18px] ${!showCategoryPicker && 'hidden'}`"
           >
-            <div
-              class="dropdown hover:overflow-y-scroll hover:pr-0 overflow-hidden pr-[18px] h-[220px] w-[300px] flex flex-row flex-wrap"
-            >
+            <template v-slot:activator="{ onClick }">
               <div
-                v-for="category in Object.keys(defaultCategories)"
-                class="flex flex-col items-center w-max px-2 rounded-md mb-1 basis-1/3"
+                class="dropdown hover:overflow-y-scroll hover:pr-0 overflow-hidden pr-[18px] h-[220px] w-[300px] flex flex-row flex-wrap"
               >
-                <button
-                  @click="(e) => setCategory(category)"
-                  :class="`bg-[#4D4B55] rounded-lg p-5 hover:bg-theme-green-hover transition
-                  ${currentCategory === category && 'bg-theme-green'}`"
+                <div
+                  v-for="category in Object.keys(defaultCategories)"
+                  class="flex flex-col items-center w-max px-2 rounded-md mb-1 basis-1/3"
                 >
-                  <Icon class="text-4xl" :icon="getCategoryIcon(category)" />
-                </button>
-                <p class="my-2 font-main font-light text-xs text-soft-white">
-                  {{ capitalizeFirstLetter(category) }}
-                </p>
+                  <button
+                    @click="
+                      (e) => {
+                        onClick()
+                        setCategory(category)
+                      }
+                    "
+                    :class="`bg-[#4D4B55] rounded-lg p-5 hover:bg-theme-green-hover transition
+                  ${currentCategory === category && 'bg-theme-green'}`"
+                  >
+                    <Icon class="text-4xl" :icon="getCategoryIcon(category)" />
+                  </button>
+                  <p class="my-2 font-main font-light text-xs text-soft-white">
+                    {{ capitalizeFirstLetter(category) }}
+                  </p>
+                </div>
               </div>
-            </div>
+            </template>
           </Dropdown>
         </div>
         <div>
@@ -367,24 +457,31 @@ export default {
               !showSubCategoryPicker && 'hidden'
             }`"
           >
-            <div
-              class="dropdown hover:overflow-y-scroll hover:pr-0 overflow-hidden pr-[18px] min-h-fit max-h-[132px] w-[250px] flex flex-row flex-wrap"
-            >
+            <template v-slot:activator="{ onClick }">
               <div
-                v-for="subCategory in defaultCategories[currentCategory].subCategories"
-                class="flex flex-col items-center w-max px-2 rounded-md mb-3"
+                class="dropdown hover:overflow-y-scroll hover:pr-0 overflow-hidden pr-[18px] min-h-fit max-h-[132px] w-[250px] flex flex-row flex-wrap"
               >
-                <button
-                  @click="(e) => setSubCategory(subCategory)"
-                  :class="`bg-[#4D4B55] rounded-xl px-4 hover:bg-theme-green-hover transition
-                  ${currentSubCategory === capitalizeFirstLetter(subCategory) && 'bg-theme-green'}`"
+                <div
+                  v-for="subCategory in defaultCategories[currentCategory].subCategories"
+                  class="flex flex-col items-center w-max px-2 rounded-md mb-3"
                 >
-                  <p class="my-2 font-main font-normal text-xs text-soft-white">
-                    {{ capitalizeFirstLetter(subCategory) }}
-                  </p>
-                </button>
+                  <button
+                    @click="
+                      (e) => {
+                        onClick()
+                        setSubCategory(subCategory)
+                      }
+                    "
+                    :class="`bg-[#4D4B55] rounded-xl px-4 hover:bg-theme-green-hover transition
+                  ${currentSubCategory === capitalizeFirstLetter(subCategory) && 'bg-theme-green'}`"
+                  >
+                    <p class="my-2 font-main font-normal text-xs text-soft-white">
+                      {{ capitalizeFirstLetter(subCategory) }}
+                    </p>
+                  </button>
+                </div>
               </div>
-            </div>
+            </template>
           </Dropdown>
         </div>
       </div>
@@ -461,16 +558,23 @@ export default {
             @close="() => (showCurrencyPicker = false)"
             :class="`h-max ml-3 flex flex-col top-11 ${!showCurrencyPicker && 'hidden'}`"
           >
-            <button
-              :value="currency"
-              v-for="currency in currencies"
-              @click="setCurrency"
-              :class="`hover:bg-theme-green-hover flex flex-row items-center w-max px-2 rounded-md mb-1
+            <template v-slot:activator="{ onClick }">
+              <button
+                :value="currency"
+                v-for="currency in currencies"
+                @click="
+                  (e) => {
+                    onClick()
+                    setCurrency(e)
+                  }
+                "
+                :class="`hover:bg-theme-green-hover flex flex-row items-center w-max px-2 rounded-md mb-1
               ${currentCurrency === currency && 'text-theme-green'}`"
-            >
-              <img :src="getFlagUrl(currency)" class="mr-2" />
-              {{ currency }}
-            </button>
+              >
+                <img :src="getFlagUrl(currency)" class="mr-2" />
+                {{ currency }}
+              </button>
+            </template>
           </Dropdown>
         </div>
       </div>
