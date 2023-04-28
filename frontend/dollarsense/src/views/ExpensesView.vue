@@ -2,7 +2,11 @@
 import ButtonMain from '../components/ButtonMain.vue'
 import Modal from '../components/Modal.vue'
 import { useQuery, useMutation } from '@vue/apollo-composable'
-import { expenseQueryGql, addExpenseMutationGql } from '../graphql/queries'
+import {
+  expenseQueryGql,
+  addExpenseMutationGql,
+  deleteExpenseMutationGql
+} from '../graphql/queries'
 import { ref, computed, h } from 'vue'
 import { Icon } from '@iconify/vue'
 import moment from 'moment'
@@ -22,6 +26,8 @@ const { notify } = useNotification()
 export default {
   setup() {
     const { mutate: addExpense, onDone: expenseAdded } = useMutation(addExpenseMutationGql)
+    const { mutate: deleteExpense, onDone: expenseDeleted } = useMutation(deleteExpenseMutationGql)
+
     const {
       result,
       loading,
@@ -39,6 +45,10 @@ export default {
     console.log('[Home] result: ', allExpenses)
 
     expenseAdded(() => {
+      refetchExpenses()
+    })
+
+    expenseDeleted(() => {
       refetchExpenses()
     })
 
@@ -85,6 +95,7 @@ export default {
       loading,
       allExpenses,
       addExpense,
+      deleteExpense,
       columns,
       date,
       amountRef,
@@ -257,8 +268,20 @@ export default {
       this.miniMenuTop = refTop
       this.miniMenuId = id
     },
-    handleDelete() {
-      console.log('[handleDelete] Deleting!')
+    async handleDelete(id: string) {
+      console.log('[handleDelete] Deleting id: ', id)
+      const deleteResult = await this.deleteExpense({
+        input: {
+          id
+        }
+      })
+
+      if (deleteResult) {
+        notify({
+          type: 'success',
+          text: 'Successfully Removed!'
+        })
+      }
     }
   },
   components: {
@@ -294,8 +317,8 @@ export default {
         <button
           @click="
             () => {
+              handleDelete(miniMenuId)
               onClick()
-              handleDelete()
             }
           "
           class="flex flex-row items-center px-2 rounded-md hover:bg-theme-green-hover"

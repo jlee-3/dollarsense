@@ -28,6 +28,18 @@ export const addExpenseMutationGql = gql`
   }
 `
 
+export const deleteExpenseMutationGql = gql`
+  mutation DeleteExpense($input: DeleteExpenseInput!) {
+    deleteExpense(input: $input) {
+      expense {
+        id
+        description
+        currency
+      }
+    }
+  }
+`
+
 export const exampleQueryGql = gql`
   query Example($id: String!) {
     example(id: $id) {

@@ -15,4 +15,4 @@ class Query(ExpenseQuery, graphene.ObjectType):
 
 class Mutation(graphene.ObjectType):
     add_expense = AddExpense.Field()
-    delete_expenese = DeleteExpense.Field()
+    delete_expense = DeleteExpense.Field()
