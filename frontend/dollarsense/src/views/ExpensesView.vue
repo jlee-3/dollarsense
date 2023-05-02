@@ -378,10 +378,11 @@ export default {
       "
       :style="{ top: miniMenuTop + 'px' }"
       :class="`-ml-[60px] -mt-2 h-max w-max px-2 py-3 duration-300 transition-mini-menu
-      ${!showMiniMenu && 'opacity-0 scale-90'}`"
+      ${!showMiniMenu && 'opacity-0 scale-90 -z-10'}`"
     >
       <template v-slot:activator="{ onClick }">
         <button
+          :disabled="!showMiniMenu"
           @click="
             () => {
               handleEdit()
@@ -394,6 +395,7 @@ export default {
           Edit
         </button>
         <button
+          :disabled="!showMiniMenu"
           @click="
             () => {
               handleDelete(miniMenuId)
