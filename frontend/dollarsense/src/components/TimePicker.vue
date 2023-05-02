@@ -99,8 +99,15 @@ export default {
     },
     handleClickOutside() {
       if (this.isOpen && !this.openStatus) {
-        if (this.currentTime && this.setTime === this.currentTime?.replace(' ', ':')) {
+        if (this.currentTime) {
           this.scrollToElement(this.currentTime.replace(' ', ':'))
+        }
+
+        if (
+          this.currentTime?.replace(' ', ':') &&
+          this.currentTime?.replace(' ', ':') !== this.setTime
+        ) {
+          this.setTime = this.currentTime?.replace(' ', ':')
         }
 
         this.openStatus = true

@@ -28,6 +28,18 @@ export const addExpenseMutationGql = gql`
   }
 `
 
+export const editExpenseMutationGql = gql`
+  mutation EditExpense($input: EditExpenseInput!) {
+    editExpense(input: $input) {
+      expense {
+        id
+        description
+        currency
+      }
+    }
+  }
+`
+
 export const deleteExpenseMutationGql = gql`
   mutation DeleteExpense($input: DeleteExpenseInput!) {
     deleteExpense(input: $input) {

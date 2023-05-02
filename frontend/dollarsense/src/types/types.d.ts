@@ -11,3 +11,12 @@ export interface Expense {
   createdAt?: Date
   updatedAt?: Date
 }
+
+export interface Category {
+  subCategories: string[]
+  icon: string
+}
+
+export interface Categories {
+  [category: string]: Category
+}

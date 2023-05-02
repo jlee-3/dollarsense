@@ -5,7 +5,8 @@ import { useQuery, useMutation } from '@vue/apollo-composable'
 import {
   expenseQueryGql,
   addExpenseMutationGql,
-  deleteExpenseMutationGql
+  deleteExpenseMutationGql,
+  editExpenseMutationGql
 } from '../graphql/queries'
 import { ref, computed, h } from 'vue'
 import { Icon } from '@iconify/vue'
@@ -26,6 +27,7 @@ const { notify } = useNotification()
 export default {
   setup() {
     const { mutate: addExpense, onDone: expenseAdded } = useMutation(addExpenseMutationGql)
+    const { mutate: editExpense, onDone: expenseEdited } = useMutation(editExpenseMutationGql)
     const { mutate: deleteExpense, onDone: expenseDeleted } = useMutation(deleteExpenseMutationGql)
 
     const {
@@ -41,10 +43,14 @@ export default {
         fetchPolicy: 'cache-and-network'
       })
     )
-    const allExpenses = computed(() => result.value?.allExpenses ?? [])
+    const allExpenses = computed<any[]>(() => result.value?.allExpenses ?? [])
     console.log('[Home] result: ', allExpenses)
 
     expenseAdded(() => {
+      refetchExpenses()
+    })
+
+    expenseEdited(() => {
       refetchExpenses()
     })
 
@@ -95,6 +101,7 @@ export default {
       loading,
       allExpenses,
       addExpense,
+      editExpense,
       deleteExpense,
       columns,
       date,
@@ -108,6 +115,7 @@ export default {
     return {
       isModalOpen: false,
       showModal: false,
+      isEdit: false,
       showTimePicker: false,
       showCurrencyPicker: false,
       showCategoryPicker: false,
@@ -124,6 +132,7 @@ export default {
       currentCategory: 'Category',
       currentSubCategory: 'Subcategory',
       currentId: '',
+      currentEditId: '',
       isDescription: true,
       isAmount: true,
       isCategory: true
@@ -137,6 +146,12 @@ export default {
   methods: {
     capitalizeFirstLetter(text: string) {
       return text.charAt(0).toUpperCase() + text.slice(1)
+    },
+    lowerFirstLetter(text: string) {
+      return text.charAt(0).toLowerCase() + text.slice(1)
+    },
+    getSelectedExpense(id: string) {
+      return this.allExpenses.filter((expense: any) => expense.id === id)[0]
     },
     handleOpenExpenseModal() {
       this.showModal = true
@@ -167,7 +182,7 @@ export default {
 
       return new Date(dateTime)
     },
-    handleAddExpense() {
+    handleSaveExpense() {
       console.log('[handleAddExpense] adding expense!')
       console.log('[handleAddExpense] currentCategory: ', this.currentCategory)
       console.log('[handleAddExpense] currentSubCategory: ', this.currentSubCategory)
@@ -190,14 +205,30 @@ export default {
       }
 
       if (this.sanitizeExpenseInput(expenseInput)) {
-        this.addExpense({
-          input: expenseInput
-        })
+        if (this.isEdit) {
+          this.editExpense({
+            input: {
+              id: this.currentEditId,
+              ...expenseInput
+            }
+          })
 
-        notify({
-          type: 'success',
-          text: 'Successfully Added!'
-        })
+          this.currentEditId = ''
+
+          notify({
+            type: 'success',
+            text: 'Successfully Edited!'
+          })
+        } else {
+          this.addExpense({
+            input: expenseInput
+          })
+
+          notify({
+            type: 'success',
+            text: 'Successfully Added!'
+          })
+        }
 
         this.showModal = false
       }
@@ -233,17 +264,17 @@ export default {
       return `solar:${defaultCategories[category].icon}`
     },
     setCategory(category: string) {
-      this.currentCategory = category
+      this.currentCategory = category !== 'uncategorized' ? category : 'Category'
       this.showCategoryPicker = false
 
       if (
-        !defaultCategories[this.currentCategory].subCategories.includes(this.currentSubCategory)
+        !defaultCategories[this.currentCategory]?.subCategories.includes(this.currentSubCategory)
       ) {
         this.currentSubCategory = 'Subcategory'
       }
     },
     setSubCategory(subCategory: string) {
-      this.currentSubCategory = subCategory
+      this.currentSubCategory = !subCategory ? 'Subcategory' : subCategory
       this.showSubCategoryPicker = false
     },
     handleSubCategoryClick() {
@@ -267,6 +298,7 @@ export default {
 
       this.miniMenuTop = refTop
       this.miniMenuId = id
+      this.currentEditId = id
     },
     async handleDelete(id: string) {
       console.log('[handleDelete] Deleting id: ', id)
@@ -281,6 +313,41 @@ export default {
           type: 'success',
           text: 'Successfully Removed!'
         })
+      }
+    },
+    handleEdit() {
+      this.showModal = true
+      this.isEdit = true
+      const currentExpense = this.getSelectedExpense(this.miniMenuId)
+
+      this.setCategory(this.lowerFirstLetter(currentExpense.category))
+      this.setSubCategory(currentExpense.subCategory)
+
+      const expenseDateTime = new Date(currentExpense.createdAt)
+      this.date = expenseDateTime
+      this.currentTime = moment(expenseDateTime).format('LT')
+
+      this.amount = currentExpense.amount
+      this.currentCurrency = currentExpense.currency
+      this.description = currentExpense.description
+    },
+    resetInputs() {
+      this.setCategory('Category')
+      this.setSubCategory('Subcategory')
+
+      this.date = new Date()
+      this.currentTime = moment().format('LT')
+
+      this.amount = ''
+      this.currentCurrency = 'NTD'
+      this.description = ''
+    },
+    handleCloseModal() {
+      this.showModal = false
+
+      if (this.isEdit) {
+        this.isEdit = false
+        this.resetInputs()
       }
     }
   },
@@ -314,6 +381,18 @@ export default {
       ${!showMiniMenu && 'opacity-0 scale-90'}`"
     >
       <template v-slot:activator="{ onClick }">
+        <button
+          @click="
+            () => {
+              handleEdit()
+              onClick()
+            }
+          "
+          class="flex flex-row items-center px-2 rounded-md hover:bg-theme-green-hover"
+        >
+          <Icon icon="solar:pen-2-outline" class="mr-2" />
+          Edit
+        </button>
         <button
           @click="
             () => {
@@ -415,9 +494,9 @@ export default {
     </div>
 
     <Modal
-      title="Add Expense"
+      :title="`${isEdit ? 'Edit Expense' : 'Add Expense'}`"
       :show-modal="showModal"
-      @close="() => (showModal = false)"
+      @close="handleCloseModal"
       :class="`${!showModal ? 'opacity-0 scale-125 duration-300 -z-[1]' : 'z-[2]'}`"
     >
       <div class="flex flex-row mt-5">
@@ -485,7 +564,7 @@ export default {
                 class="dropdown hover:overflow-y-scroll hover:pr-0 overflow-hidden pr-[18px] min-h-fit max-h-[132px] w-[250px] flex flex-row flex-wrap"
               >
                 <div
-                  v-for="subCategory in defaultCategories[currentCategory].subCategories"
+                  v-for="subCategory in defaultCategories[currentCategory]?.subCategories"
                   class="flex flex-col items-center w-max px-2 rounded-md mb-3"
                 >
                   <button
@@ -530,7 +609,7 @@ export default {
             <DownV class="ml-1" />
           </button>
           <TimePicker
-            :currentTime="getCurrentTime"
+            :currentTime="currentTime"
             :is-open="showTimePicker"
             @setTime="(newTime) => (currentTime = newTime)"
             @close="() => (showTimePicker = false)"
@@ -624,7 +703,7 @@ export default {
 
       <div class="flex justify-end items-center mt-20">
         <button class="text-soft-white mr-8" @click="() => (showModal = false)">Cancel</button>
-        <ButtonMain text="Save" @click="handleAddExpense"></ButtonMain>
+        <ButtonMain text="Save" @click="handleSaveExpense"></ButtonMain>
       </div>
     </Modal>
   </main>

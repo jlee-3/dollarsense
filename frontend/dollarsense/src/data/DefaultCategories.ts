@@ -1,4 +1,4 @@
-export const defaultCategories: any = {
+export const defaultCategories: Ds.Categories = {
   housing: {
     subCategories: ['Mortgage', 'Rent', 'Management Fees'],
     icon: 'home-outline'
