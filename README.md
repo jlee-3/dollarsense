@@ -1,4 +1,12 @@
 # dollarsense
+Expenses and budgeting app.
+Control your spending, take control of your finances 💪
+>"Changing habits starts with making the invisible visible"
+
+Core functions
+-   Help manage spending by recording expenses and categorising them
+-   Set and track budgets, saving goals
+-   Smart visualisations of spending categories, savings ratio and more
 
 ## Installation
 **Django**
