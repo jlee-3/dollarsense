@@ -25,4 +25,4 @@ class EditExpenseInput(graphene.InputObjectType):
 
 class DeleteExpenseInput(graphene.InputObjectType):
     id = graphene.String(required=False)
-    # ids = graphene.String(required=False)
+    ids = graphene.List(graphene.String, required=False)

@@ -135,7 +135,8 @@ export default {
       currentEditId: '',
       isDescription: true,
       isAmount: true,
-      isCategory: true
+      isCategory: true,
+      selectedIds: new Set()
     }
   },
   computed: {
@@ -301,14 +302,28 @@ export default {
       this.currentEditId = id
     },
     async handleDelete(id: string) {
-      console.log('[handleDelete] Deleting id: ', id)
-      const deleteResult = await this.deleteExpense({
-        input: {
+      let input
+      if (
+        this.selectedIds.size === 0 ||
+        (this.selectedIds.size === 1 && this.selectedIds.has(id))
+      ) {
+        input = {
           id
         }
-      })
+      } else {
+        input = {
+          ids: Array.from(this.selectedIds)
+        }
+      }
 
-      if (deleteResult) {
+      const deleteResult = await this.deleteExpense({
+        input
+      })
+      // console.log('[handleDelete] deleteResult: ', deleteResult)
+
+      if (deleteResult?.data?.deleteExpense?.output) {
+        this.selectedIds.clear()
+
         notify({
           type: 'success',
           text: 'Successfully Removed!'
@@ -348,6 +363,13 @@ export default {
       if (this.isEdit) {
         this.isEdit = false
         this.resetInputs()
+      }
+    },
+    handleCheckboxClick(id: string) {
+      if (this.selectedIds.has(id)) {
+        this.selectedIds.delete(id)
+      } else {
+        this.selectedIds.add(id)
       }
     }
   },
@@ -467,6 +489,7 @@ export default {
                   v-else-if="column.key === 'checkbox'"
                   class="mr-3 opacity-0 hover:opacity-100 checked:opacity-100 checked:accent-theme-green transition"
                   type="checkbox"
+                  @click="() => handleCheckboxClick(expense['id'])"
                   :id="expense['id']"
                 />
                 <p

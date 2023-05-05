@@ -43,10 +43,9 @@ export const editExpenseMutationGql = gql`
 export const deleteExpenseMutationGql = gql`
   mutation DeleteExpense($input: DeleteExpenseInput!) {
     deleteExpense(input: $input) {
-      expense {
-        id
-        description
-        currency
+      output {
+        isSuccess
+        affectedEntities
       }
     }
   }

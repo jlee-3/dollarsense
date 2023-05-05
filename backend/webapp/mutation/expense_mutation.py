@@ -59,16 +59,34 @@ class DeleteExpense(graphene.Mutation):
     class Arguments:
         input = expense.DeleteExpenseInput()
 
-    expense = graphene.Field(types.ExpenseType)
+    # expense = graphene.Field(types.ExpenseType)
+    # output = graphene.List(types.ExpenseOutput)
+    output = graphene.Field(types.DeleteOutput)
 
     def mutate(root, info, input=None):
         id = input.id
-        expenseEntity = models.Expense.objects.get(id=id)
-        returnEntity = expenseEntity
-        expenseEntity.delete()
+        ids = input.ids
 
-        returnEntity.id = id
-        print('DeleteExpense expenseEntity: ')
-        pprint(returnEntity.__dict__)
+        if id:
+            entities = models.Expense.objects.filter(id=id)
+            # print('DeleteExpense entities: ', entities.values())
 
-        return DeleteExpense(expense=returnEntity)
+        elif ids:
+            entities = models.Expense.objects.filter(id__in=ids)
+            # print('DeleteExpense entities: ', entities.values())
+
+        # expenseEntity = models.Expense.objects.get(id=id)
+        # returnEntities = expenseEntity
+        # expenseEntity.delete()
+        # returnEntity.id = id
+
+        deleteResult = entities.delete()
+        result = {
+            'isSuccess': False if deleteResult[0] == 0 else True,
+            'affectedEntities': deleteResult[0]
+        }
+
+        print('DeleteExpense expenseEntity: ', result)
+        # pprint(returnEntity.__dict__)
+
+        return DeleteExpense(output=result)
