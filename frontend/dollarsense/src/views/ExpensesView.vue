@@ -19,7 +19,7 @@ import Close from '../components/icons/IconClose.vue'
 import DownV from '../components/icons/IconDownV.vue'
 import CircleCheck from '../components/icons/IconCircleCheck.vue'
 import Dropdown from '../components/Dropdown.vue'
-import { countryCodes } from '../data/CountryCodes'
+import CurrencyPicker from '../components/CurrencyPicker.vue'
 import { defaultCategories } from '../data/DefaultCategories'
 import { useNotification } from '@kyvg/vue3-notification'
 const { notify } = useNotification()
@@ -95,6 +95,7 @@ export default {
     ]
 
     const date = ref(new Date())
+    const filterDate = ref(new Date())
     const amountRef = ref()
 
     return {
@@ -105,10 +106,9 @@ export default {
       deleteExpense,
       columns,
       date,
+      filterDate,
       amountRef,
-      countryCodes,
-      defaultCategories,
-      currency
+      defaultCategories
     }
   },
   data() {
@@ -117,7 +117,6 @@ export default {
       showModal: false,
       isEdit: false,
       showTimePicker: false,
-      showCurrencyPicker: false,
       showCategoryPicker: false,
       showSubCategoryPicker: false,
       showMiniMenu: false,
@@ -128,7 +127,7 @@ export default {
       description: '',
       isAmountInputFocused: false,
       currentCurrency: 'NTD',
-      currencies: ['NTD', 'AUD', 'USD'],
+      filterCurrency: 'NTD',
       currentCategory: 'Category',
       currentSubCategory: 'Subcategory',
       currentId: '',
@@ -250,16 +249,11 @@ export default {
       this.amount = ''
       this.amountRef.focus()
     },
-    setCurrency(event: any) {
-      this.currentCurrency = event.target.value
-      this.showCurrencyPicker = false
+    setCurrency(currency: string) {
+      this.currentCurrency = currency
     },
-    getFlagCode(currency: string) {
-      return Object.keys(countryCodes).find((key) => countryCodes[key].currency === currency)
-    },
-    getFlagUrl(currency: string) {
-      const flagCode = this.getFlagCode(currency)
-      return `https://api.iconify.design/circle-flags:${flagCode}.svg`
+    setFilterCurrency(currency: string) {
+      this.filterCurrency = currency
     },
     getCategoryIcon(category: string) {
       return `solar:${defaultCategories[category].icon}`
@@ -383,13 +377,14 @@ export default {
     DownV,
     Dropdown,
     CircleCheck,
-    Icon
+    Icon,
+    CurrencyPicker
   }
 }
 </script>
 
 <template>
-  <main class="bg-dark-background w-screen p-14">
+  <main class="bg-dark-background w-screen p-12 overflow-hidden flex flex-col">
     <Dropdown
       :is-open="showMiniMenu"
       @close="
@@ -431,7 +426,23 @@ export default {
         </button>
       </template>
     </Dropdown>
-    <div class="bg-grey-bubble w-full h-full rounded-3xl p-12">
+    <div class="bg-grey-bubble rounded-3xl p-4 mb-10 flex flex-row w-max place-self-end">
+      <div
+        class="flex flex-row bg-grey-pill items-center pl-4 rounded-2xl w-fit text-soft-gray mr-6 hover:bg-grey-pill-highlight transition"
+      >
+        <CalendarIcon class="mr-2" />
+        <Datepicker
+          v-model="filterDate"
+          class="bg-transparent border-0 outline-0 w-[100px] text-main text-sm font-light leading-3 my-2.5"
+        />
+      </div>
+      <CurrencyPicker
+        button-class="rounded-2xl"
+        :currency-state="filterCurrency"
+        @select-currency="(currency:string)=>setFilterCurrency(currency)"
+      />
+    </div>
+    <div class="bg-grey-bubble w-full h-5/6 rounded-3xl p-12">
       <div class="flex justify-between">
         <h1 class="font-main font-medium text-2xl text-soft-white">Expenses</h1>
         <ButtonMain @click="handleOpenExpenseModal" text="New Expense" />
@@ -671,39 +682,12 @@ export default {
           <Close class="-ml-8 text-soft-gray" width="20px" />
         </button>
 
-        <div class="ml-6">
-          <button
-            @click="() => (showCurrencyPicker = true)"
-            class="flex flex-row items-center bg-grey-pill rounded-xl p-2.5 px-3 hover:bg-grey-pill-highlight transition"
-          >
-            <img :src="getFlagUrl(currentCurrency)" class="mr-2" />
-            <p class="text-main text-sm font-normal leading-3">{{ currentCurrency }}</p>
-            <DownV class="ml-1" />
-          </button>
-          <Dropdown
-            :is-open="showCurrencyPicker"
-            @close="() => (showCurrencyPicker = false)"
-            :class="`h-max ml-3 flex flex-col top-11 ${!showCurrencyPicker && 'hidden'}`"
-          >
-            <template v-slot:activator="{ onClick }">
-              <button
-                :value="currency"
-                v-for="currency in currencies"
-                @click="
-                  (e) => {
-                    onClick()
-                    setCurrency(e)
-                  }
-                "
-                :class="`hover:bg-theme-green-hover flex flex-row items-center w-max px-2 rounded-md mb-1
-              ${currentCurrency === currency && 'text-theme-green'}`"
-              >
-                <img :src="getFlagUrl(currency)" class="mr-2" />
-                {{ currency }}
-              </button>
-            </template>
-          </Dropdown>
-        </div>
+        <CurrencyPicker
+          class="ml-6"
+          button-class="rounded-xl"
+          :currency-state="currentCurrency"
+          @select-currency="(currency:string)=>setCurrency(currency)"
+        />
       </div>
 
       <div class="flex flex-col mt-8">
