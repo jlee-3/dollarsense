@@ -26,3 +26,16 @@ class EditExpenseInput(graphene.InputObjectType):
 class DeleteExpenseInput(graphene.InputObjectType):
     id = graphene.String(required=False)
     ids = graphene.List(graphene.String, required=False)
+
+
+class ExpenseQueryInput(graphene.InputObjectType):
+    # id = graphene.String(required=False)
+    currency = graphene.String(required=False)
+    category = graphene.String(required=False)
+    subCategory = graphene.String(required=False)
+    date = graphene.Date(required=False)
+    month = graphene.String(required=False)
+    year = graphene.String(required=False)
+    startDate = graphene.Date(required=False)
+    endDate = graphene.Date(required=False)
+    orderBy = graphene.String(required=False)
