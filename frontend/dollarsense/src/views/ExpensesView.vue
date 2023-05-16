@@ -37,14 +37,21 @@ export default {
     } = useQuery(
       expenseQueryGql,
       // variables
-      null,
+      {
+        input: {
+          // category: '',
+          // startDate: '2023-01-01',
+          // endDate: '2023-05-30',
+          // orderBy: '-createdAt'
+        }
+      },
       // options
       () => ({
         fetchPolicy: 'cache-and-network'
       })
     )
-    const allExpenses = computed<any[]>(() => result.value?.allExpenses ?? [])
-    console.log('[Home] result: ', allExpenses)
+    const expenses = computed<any[]>(() => result.value?.expenses ?? [])
+    console.log('[Home] result: ', expenses)
 
     expenseAdded(() => {
       refetchExpenses()
@@ -100,7 +107,7 @@ export default {
 
     return {
       loading,
-      allExpenses,
+      expenses,
       addExpense,
       editExpense,
       deleteExpense,
@@ -108,7 +115,8 @@ export default {
       date,
       filterDate,
       amountRef,
-      defaultCategories
+      defaultCategories,
+      refetchExpenses
     }
   },
   data() {
@@ -120,6 +128,8 @@ export default {
       showCategoryPicker: false,
       showSubCategoryPicker: false,
       showMiniMenu: false,
+      showAddFilterMenu: false,
+      showFilterMenu: false,
       miniMenuTop: '',
       miniMenuId: '',
       currentTime: moment().format('LT'),
@@ -135,12 +145,24 @@ export default {
       isDescription: true,
       isAmount: true,
       isCategory: true,
-      selectedIds: new Set()
+      selectedIds: new Set(),
+      filters: new Set<string>(),
+      filterMenuLeft: '',
+      currentFilter: '',
+      filterValues: <{ [filter: string]: string }>{},
+      inputVariables: <{ [variable: string]: string | number }>{}
     }
   },
   computed: {
     getCurrentTime() {
       return moment().format('LT')
+    },
+    getFilters() {
+      return this.columns
+        .filter((col) => col.title !== '')
+        .map((col) => {
+          return this.capitalizeFirstLetter(col.title.toLowerCase())
+        })
     }
   },
   methods: {
@@ -150,8 +172,18 @@ export default {
     lowerFirstLetter(text: string) {
       return text.charAt(0).toLowerCase() + text.slice(1)
     },
+    keyToTitle(text: string) {
+      return this.capitalizeFirstLetter(text.toLowerCase())
+    },
     getSelectedExpense(id: string) {
-      return this.allExpenses.filter((expense: any) => expense.id === id)[0]
+      return this.expenses.filter((expense: any) => expense.id === id)[0]
+    },
+    getFilterKey(title: string) {
+      return this.columns
+        .filter((col) => col.title.toLowerCase() === title.toLowerCase())
+        .map((col) => {
+          return col.key
+        })[0]
     },
     handleOpenExpenseModal() {
       this.showModal = true
@@ -365,6 +397,33 @@ export default {
       } else {
         this.selectedIds.add(id)
       }
+    },
+    handleAddFilter(filter: string) {
+      this.filters.add(filter)
+    },
+    handleFilterMenuClick(filter: string) {
+      this.showFilterMenu = true
+      this.currentFilter = filter
+      const refName = 'ref:filter:' + filter
+      const ref: any = this.$refs[refName]
+      const refLeft = ref[0].offsetLeft
+      this.filterMenuLeft = refLeft
+    },
+    handleFilterSelect(filter: string, value: string) {
+      this.filterValues[filter.toLowerCase()] = value
+      this.inputVariables[this.lowerFirstLetter(filter)] = this.capitalizeFirstLetter(value)
+      this.refetchExpenses({
+        input: this.inputVariables
+      })
+    },
+    handleRemoveFilter() {
+      this.filters.delete(this.currentFilter)
+      delete this.filterValues[this.currentFilter.toLowerCase()]
+      delete this.inputVariables[this.currentFilter]
+
+      this.refetchExpenses({
+        input: this.inputVariables
+      })
     }
   },
   components: {
@@ -384,7 +443,7 @@ export default {
 </script>
 
 <template>
-  <main class="bg-dark-background w-screen p-12 overflow-hidden flex flex-col">
+  <main class="bg-dark-background w-screen p-12 flex flex-col">
     <Dropdown
       :is-open="showMiniMenu"
       @close="
@@ -394,7 +453,7 @@ export default {
         }
       "
       :style="{ top: miniMenuTop + 'px' }"
-      :class="`-ml-[60px] -mt-2 h-max w-max px-2 py-3 duration-300 transition-mini-menu
+      :class="`-ml-[70px] -mt-2 h-max w-max px-2 py-3 duration-300 transition-mini-menu
       ${!showMiniMenu && 'opacity-0 scale-90 -z-10'}`"
     >
       <template v-slot:activator="{ onClick }">
@@ -448,7 +507,126 @@ export default {
         <ButtonMain @click="handleOpenExpenseModal" text="New Expense" />
       </div>
 
-      <div class="my-8 overflow-y-scroll h-5/6">
+      <div class="flex flex-row items-center">
+        <div class="flex flex-row items-center">
+          <button
+            :ref="'ref:filter:' + filter"
+            @click="
+              () => {
+                handleFilterMenuClick(filter)
+              }
+            "
+            v-for="filter in filters"
+            class="items-center bg-grey-pill p-1.5 pl-4 pr-3 rounded-2xl flex flex-row hover:bg-grey-pill-highlight transition mr-3"
+          >
+            {{
+              filterValues[filter.toLowerCase()]
+                ? keyToTitle(filter) +
+                  ': ' +
+                  capitalizeFirstLetter(filterValues[filter.toLowerCase()])
+                : keyToTitle(filter)
+            }}
+            <DownV class="ml-1" />
+          </button>
+          <Dropdown
+            :is-open="showFilterMenu"
+            @close="
+              () => {
+                showFilterMenu = false
+                miniMenuId = ''
+              }
+            "
+            :style="{ left: filterMenuLeft + 'px' }"
+            :class="`top-10 p-2 duration-300 transition-mini-menu flex flex-col
+            ${!showFilterMenu && 'opacity-0 scale-90 -z-10 invisible'}`"
+          >
+            <template v-slot:activator="{ onClick }">
+              <!-- <div class="flex flex-row"> -->
+              <button
+                @click="
+                  () => {
+                    onClick()
+                    handleRemoveFilter()
+                  }
+                "
+                class="my-1 ml-2 self-end"
+              >
+                <Icon icon="solar:trash-bin-trash-outline" class="text-red-500 mr-2" />
+              </button>
+              <!-- </div> -->
+              <div class="ml-1 h-32 dropdown overflow-y-scroll flex flex-col">
+                <button
+                  @click="
+                    () => {
+                      handleFilterSelect('Category', category)
+                      onClick()
+                    }
+                  "
+                  v-if="currentFilter === 'category'"
+                  v-for="category in Object.keys(defaultCategories)"
+                  :class="`hover:bg-theme-green-hover rounded-md px-2 mb-1 w-full text-left 
+                  ${filterValues['category'] === category && 'bg-theme-green text-white'}`"
+                >
+                  {{ capitalizeFirstLetter(category) }}
+                </button>
+                <button
+                  @click="
+                    () => {
+                      handleFilterSelect('subCategory', subCategory)
+                      onClick()
+                    }
+                  "
+                  v-if="currentFilter === 'subCategory'"
+                  v-for="subCategory in defaultCategories[filterValues['category']].subCategories"
+                  :class="`hover:bg-theme-green-hover rounded-md px-2 mb-1 w-full text-left 
+                  ${filterValues['subcategory'] === subCategory && 'bg-theme-green text-white'}`"
+                >
+                  {{ capitalizeFirstLetter(subCategory) }}
+                </button>
+              </div>
+            </template>
+          </Dropdown>
+        </div>
+        <div>
+          <button
+            class="flex flex-row items-center hover:text-soft-white"
+            @click="() => (showAddFilterMenu = true)"
+          >
+            <Icon icon="material-symbols:add" class="mr-2" />
+            <p>Add Filter</p>
+          </button>
+          <Dropdown
+            :is-open="showAddFilterMenu"
+            @close="
+              () => {
+                showAddFilterMenu = false
+                miniMenuId = ''
+              }
+            "
+            :class="`h-max p-2 duration-300 transition-mini-menu flex flex-col
+            ${!showAddFilterMenu && 'opacity-0 scale-90 -z-10 invisible'}`"
+          >
+            <template v-slot:activator="{ onClick }">
+              <button
+                :disabled="!showAddFilterMenu"
+                :id="`filter:${field}`"
+                v-for="field in getFilters"
+                @click="
+                  (e) => {
+                    handleAddFilter(getFilterKey(field))
+                    onClick()
+                  }
+                "
+                class="hover:bg-theme-green-hover rounded-md p-2 mb-1 text-left"
+              >
+                {{ field }}
+              </button>
+            </template>
+          </Dropdown>
+        </div>
+      </div>
+
+      <div class="my-8 overflow-y-scroll h-5/6 -ml-7 -mr-2">
         <table class="w-full">
           <thead class="sticky top-0 z-[1] bg-grey-bubble">
             <tr class="">
@@ -476,7 +654,7 @@ export default {
               :class="`transition 
               ${miniMenuId === expense['id'] && 'bg-theme-green-hover'}
               ${miniMenuId === '' && 'hover:bg-theme-green-hover'}`"
-              v-for="expense of allExpenses"
+              v-for="expense of expenses"
             >
               <td
                 class="py-2 mb-1 first:rounded-l-md last:rounded-r-md last:pr-5"
@@ -486,7 +664,7 @@ export default {
                   :ref="'ref:' + expense['id']"
                   v-if="column.key === 'menu'"
                   @click="(e) => handleMiniMenuClick(e, expense['id'])"
-                  :class="`ml-5 opacity-0 rounded-md py-1 transition 
+                  :class="`ml-2 opacity-0 rounded-md py-1 transition 
                   ${
                     ((currentId === expense['id'] && miniMenuId === '') ||
                       miniMenuId === expense['id']) &&
@@ -498,7 +676,7 @@ export default {
                 </button>
                 <input
                   v-else-if="column.key === 'checkbox'"
-                  class="mr-3 opacity-0 hover:opacity-100 checked:opacity-100 checked:accent-theme-green transition"
+                  class="mr-2 -mx-3 opacity-0 hover:opacity-100 checked:opacity-100 checked:accent-theme-green transition"
                   type="checkbox"
                   @click="() => handleCheckboxClick(expense['id'])"
                   :id="expense['id']"

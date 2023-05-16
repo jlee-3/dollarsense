@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client/core'
 
 export const expenseQueryGql = gql`
-  query AllExpenses {
-    allExpenses {
+  query Expenses($input: ExpenseQueryInput!) {
+    expenses(input: $input) {
       id
       description
       amount

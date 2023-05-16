@@ -8,8 +8,7 @@ export default {
   },
   data() {
     return {
-      openStatus: false,
-      currencies: ['NTD', 'AUD', 'USD']
+      openStatus: false
     }
   },
   methods: {
