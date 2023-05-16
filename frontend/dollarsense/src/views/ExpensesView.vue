@@ -158,11 +158,17 @@ export default {
       return moment().format('LT')
     },
     getFilters() {
-      return this.columns
-        .filter((col) => col.title !== '')
-        .map((col) => {
-          return this.capitalizeFirstLetter(col.title.toLowerCase())
-        })
+      let formattedFilters = this.columns.filter(
+        (col) => col.title !== '' && !this.filters.has(col.key)
+      )
+
+      if (!this.filterValues['category']) {
+        formattedFilters = formattedFilters.filter((col) => col.key !== 'subCategory')
+      }
+
+      return formattedFilters.map((col) => {
+        return this.capitalizeFirstLetter(col.title.toLowerCase())
+      })
     }
   },
   methods: {
@@ -417,9 +423,16 @@ export default {
       })
     },
     handleRemoveFilter() {
-      this.filters.delete(this.currentFilter)
-      delete this.filterValues[this.currentFilter.toLowerCase()]
-      delete this.inputVariables[this.currentFilter]
+      if (this.currentFilter === 'category') {
+        this.removeFilter('subCategory')
+      }
+
+      this.removeFilter(this.currentFilter)
+    },
+    removeFilter(filter: string) {
+      this.filters.delete(filter)
+      delete this.filterValues[filter.toLowerCase()]
+      delete this.inputVariables[filter]
 
       this.refetchExpenses({
         input: this.inputVariables
