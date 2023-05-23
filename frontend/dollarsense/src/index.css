@@ -23,7 +23,7 @@
   border: 8px solid #1b1b1c;
 }
 
-.time-picker::-webkit-scrollbar {
+.hide-scroll::-webkit-scrollbar {
   width: 0px;
 }
 

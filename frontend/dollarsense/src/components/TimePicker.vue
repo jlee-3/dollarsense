@@ -127,7 +127,7 @@ export default {
     v-click-outside="handleClickOutside"
     class="bg-grey-pill h-[92px] absolute top-[33px] z-10 p-2 rounded-md flex flex-row justify-between flex-nowrap shadow-lg shadow-dark-background/50"
   >
-    <div v-on:scroll="onScroll" class="time-picker flex flex-col overflow-y-scroll box-content">
+    <div v-on:scroll="onScroll" class="hide-scroll flex flex-col overflow-y-scroll box-content">
       <button
         :key="hour"
         :id="'h' + hour"
@@ -141,7 +141,7 @@ export default {
         {{ hour }}
       </button>
     </div>
-    <div v-on:scroll="onScroll" class="time-picker flex flex-col overflow-y-scroll box-content">
+    <div v-on:scroll="onScroll" class="hide-scroll flex flex-col overflow-y-scroll box-content">
       <button
         :key="minute"
         :id="'m' + minute"

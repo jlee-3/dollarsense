@@ -15,6 +15,7 @@ import currency from 'currency.js'
 import Datepicker from 'vue3-datepicker'
 import CalendarIcon from '../components/icons/IconCalendar.vue'
 import TimePicker from '../components/TimePicker.vue'
+import DatePicker from '../components/DatePicker.vue'
 import Close from '../components/icons/IconClose.vue'
 import DownV from '../components/icons/IconDownV.vue'
 import CircleCheck from '../components/icons/IconCircleCheck.vue'
@@ -179,7 +180,7 @@ export default {
       return text.charAt(0).toLowerCase() + text.slice(1)
     },
     keyToTitle(text: string) {
-      return this.capitalizeFirstLetter(text.toLowerCase())
+      return text === 'createdAt' ? 'Date' : this.capitalizeFirstLetter(text.toLowerCase())
     },
     getSelectedExpense(id: string) {
       return this.expenses.filter((expense: any) => expense.id === id)[0]
@@ -418,6 +419,15 @@ export default {
     handleFilterSelect(filter: string, value: string) {
       this.filterValues[filter.toLowerCase()] = value
       this.inputVariables[this.lowerFirstLetter(filter)] = this.capitalizeFirstLetter(value)
+
+      this.refetchExpenses({
+        input: this.inputVariables
+      })
+    },
+    handleDateSelect(filter: string, value: string) {
+      this.filterValues[filter.toLowerCase()] = moment(value).format('YYYY-MM-DD')
+      this.inputVariables['date'] = moment(value).format('YYYY-MM-DD')
+
       this.refetchExpenses({
         input: this.inputVariables
       })
@@ -425,6 +435,8 @@ export default {
     handleRemoveFilter() {
       if (this.currentFilter === 'category') {
         this.removeFilter('subCategory')
+      } else if (this.currentFilter === 'createdAt') {
+        this.removeFilter('date')
       }
 
       this.removeFilter(this.currentFilter)
@@ -450,7 +462,8 @@ export default {
     Dropdown,
     CircleCheck,
     Icon,
-    CurrencyPicker
+    CurrencyPicker,
+    DatePicker
   }
 }
 </script>
@@ -567,7 +580,10 @@ export default {
                 <Icon icon="solar:trash-bin-trash-outline" class="text-red-500 mr-2" />
               </button>
               <!-- </div> -->
-              <div class="ml-1 h-32 dropdown overflow-y-scroll flex flex-col">
+              <div
+                v-if="currentFilter === 'category' || currentFilter === 'subCategory'"
+                class="ml-1 h-32 dropdown overflow-y-scroll flex flex-col"
+              >
                 <button
                   @click="
                     () => {
@@ -589,7 +605,7 @@ export default {
                       onClick()
                     }
                   "
-                  v-if="currentFilter === 'subCategory'"
+                  v-else-if="currentFilter === 'subCategory'"
                   v-for="subCategory in defaultCategories[filterValues['category']].subCategories"
                   :class="`hover:bg-theme-green-hover rounded-md px-2 mb-1 w-full text-left 
                   ${filterValues['subcategory'] === subCategory && 'bg-theme-green text-white'}`"
@@ -597,6 +613,16 @@ export default {
                   {{ capitalizeFirstLetter(subCategory) }}
                 </button>
               </div>
+              <DatePicker
+                v-else-if="currentFilter === 'createdAt'"
+                :input-date="date"
+                @setDate="
+                  (selectedDate) => {
+                    handleDateSelect('createdAt', selectedDate)
+                    onClick()
+                  }
+                "
+              />
             </template>
           </Dropdown>
         </div>
