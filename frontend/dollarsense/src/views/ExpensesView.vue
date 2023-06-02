@@ -456,6 +456,7 @@ export default {
       }
 
       this.removeFilter(this.currentFilter)
+      this.currentFilter = ''
     },
     removeFilter(filter: string) {
       this.filters.delete(filter)

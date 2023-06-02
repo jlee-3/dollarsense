@@ -88,7 +88,10 @@ export default {
       const month = this.getMonthFromGrid(row, day)
       if (month !== this.getMonthIndex) {
         this.selectedDate = new Date(this.currentDate?.setMonth(month))
-        this.startDate = new Date(this.currentDate?.setMonth(month))
+        if (this.inputMode === 'single') {
+          this.startDate = new Date(this.currentDate?.setMonth(month))
+        }
+        this.changeMonth(month)
       }
 
       if (this.inputMode === 'single') {
@@ -102,12 +105,15 @@ export default {
         this.isSelectingRange = true
       } else if (this.inputMode === 'range' && this.isSelectingRange) {
         const newDate = new Date(this.currentDate?.setDate(day))
+
+        // enable range to be selected regardless of starting point
         if (newDate.valueOf() < this.startDate) {
           this.endDate = this.startDate
           this.startDate = newDate
         } else {
           this.endDate = newDate
         }
+
         let endBoundary = new Date(this.endDate)
         endBoundary.setDate(this.endDate.getDate() + 1)
 
@@ -270,7 +276,7 @@ export default {
               v-for="day in row"
               :class="`
               ${isInRange(index, day) && 'bg-theme-green-hover rounded-none'}
-              ${shouldHighlightDate(index, day) && 'bg-theme-green'}
+              ${shouldHighlightDate(index, day) && isCurrentMonth(index, day) && 'bg-theme-green'}
               ${isStartDate(index, day) && 'rounded-l-md'}
               ${isEndDate(index, day) && 'rounded-r-md'}
               ${!isStartDate(index, day) && !isEndDate(index, day) && 'rounded-md'}`"
@@ -278,7 +284,11 @@ export default {
               <button
                 @click="handleClick(index, day)"
                 :class="`hover:bg-theme-green-hover w-full p-1 px-1.5 scroll-px-1.5 flex justify-center font-main font-thin text-sm rounded-md
-                ${isCurrentDay(index, day) && 'border border-theme-green'}
+                ${
+                  isCurrentDay(index, day) &&
+                  isCurrentMonth(index, day) &&
+                  'border border-theme-green'
+                }
                 ${isCurrentMonth(index, day) ? 'text-white' : 'text-soft-gray'}
               `"
               >
