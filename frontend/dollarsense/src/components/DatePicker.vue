@@ -9,15 +9,20 @@ type Views = 'calendar' | 'month' | 'year'
 export default {
   props: {
     inputDate: Date,
+    inputMode: String,
     isOpen: Boolean
   },
   setup(props) {
     const header = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
     const selectedDate = ref(new Date())
+    const startDate = ref()
+    const endDate = ref()
 
     return {
       header,
-      selectedDate
+      selectedDate,
+      startDate,
+      endDate
     }
   },
   data() {
@@ -26,7 +31,8 @@ export default {
       nowYear: new Date().getFullYear(),
       nowMonth: new Date().getMonth(),
       nowDay: new Date().getDate(),
-      currentDate: this.inputDate ? this.inputDate : new Date()
+      currentDate: this.inputDate ? this.inputDate : new Date(),
+      isSelectingRange: false
     }
   },
   computed: {
@@ -82,10 +88,35 @@ export default {
       const month = this.getMonthFromGrid(row, day)
       if (month !== this.getMonthIndex) {
         this.selectedDate = new Date(this.currentDate?.setMonth(month))
+        this.startDate = new Date(this.currentDate?.setMonth(month))
       }
 
-      this.selectedDate = new Date(this.currentDate?.setDate(day))
-      this.$emit('setDate', this.selectedDate)
+      if (this.inputMode === 'single') {
+        this.selectedDate = new Date(this.currentDate?.setDate(day))
+        this.$emit('setDate', {
+          date: this.selectedDate
+        })
+      } else if (this.inputMode === 'range' && !this.isSelectingRange) {
+        this.startDate = new Date(this.currentDate?.setDate(day))
+        this.endDate = undefined
+        this.isSelectingRange = true
+      } else if (this.inputMode === 'range' && this.isSelectingRange) {
+        const newDate = new Date(this.currentDate?.setDate(day))
+        if (newDate.valueOf() < this.startDate) {
+          this.endDate = this.startDate
+          this.startDate = newDate
+        } else {
+          this.endDate = newDate
+        }
+        let endBoundary = new Date(this.endDate)
+        endBoundary.setDate(this.endDate.getDate() + 1)
+
+        this.$emit('setDate', {
+          startDate: this.startDate,
+          endDate: endBoundary
+        })
+        this.isSelectingRange = false
+      }
     },
     getMonthFromGrid(row: number, day: number) {
       let month = this.getMonthIndex
@@ -100,6 +131,9 @@ export default {
     getMonthFromIndex(index: number) {
       return moment(new Date().setMonth(index)).format('MMM')
     },
+    getDateFromGrid(day: number) {
+      return new Date(this.getYearIndex, this.getMonthIndex, day)
+    },
     isCurrentDay(row: number, day: number) {
       return (
         day === this.nowDay &&
@@ -110,11 +144,41 @@ export default {
     isCurrentMonth(row: number, day: number) {
       return this.getMonthFromGrid(row, day) === this.getMonthIndex
     },
-    isSelectedDate(row: number, day: number) {
+    isRangeEndpoint(row: number, day: number) {
       return (
-        day === this.selectedDate.getDate() &&
-        this.getMonthFromGrid(row, day) === this.selectedDate.getMonth() &&
-        this.getYearIndex === this.selectedDate.getFullYear()
+        this.inputMode === 'range' &&
+        (this.isSelectedDate(row, day, this.startDate) ||
+          this.isSelectedDate(row, day, this.endDate))
+      )
+    },
+    isStartDate(row: number, day: number) {
+      return this.inputMode === 'range' && this.isSelectedDate(row, day, this.startDate)
+    },
+    isEndDate(row: number, day: number) {
+      return this.inputMode === 'range' && this.isSelectedDate(row, day, this.endDate)
+    },
+    shouldHighlightDate(row: number, day: number) {
+      return (
+        (this.inputMode === 'single' && this.isSelectedDate(row, day, this.selectedDate)) ||
+        this.isRangeEndpoint(row, day)
+      )
+    },
+    isSelectedDate(row: number, day: number, date: Date) {
+      return (
+        date &&
+        day === date.getDate() &&
+        this.getMonthFromGrid(row, day) === date.getMonth() &&
+        this.getYearIndex === date.getFullYear()
+      )
+    },
+    isInRange(row: number, day: number) {
+      return (
+        this.inputMode === 'range' &&
+        this.isCurrentMonth(row, day) &&
+        this.startDate &&
+        this.endDate &&
+        this.getDateFromGrid(day).valueOf() > this.startDate.valueOf() &&
+        this.getDateFromGrid(day + 1).valueOf() < this.endDate.valueOf()
       )
     },
     changeMonth(month: number) {
@@ -154,7 +218,7 @@ export default {
 </script>
 
 <template>
-  <div class="bg-grey-pill w-fit z-10 p-1 flex flex-col justify-between">
+  <div class="bg-grey-pill w-min z-10 p-1 flex flex-col justify-between">
     <div v-show="view === 'calendar'" class="absolute">
       <div class="flex flex-row justify-between px-1.5 mb-1">
         <button
@@ -189,7 +253,7 @@ export default {
         </button>
       </div>
 
-      <table>
+      <table class="border-collapse border-spacing-0">
         <thead>
           <tr>
             <td v-for="day in header">
@@ -202,13 +266,21 @@ export default {
 
         <tbody>
           <tr v-for="(row, index) in generateDays">
-            <td v-for="day in row">
+            <td
+              v-for="day in row"
+              :class="`
+              ${isInRange(index, day) && 'bg-theme-green-hover rounded-none'}
+              ${shouldHighlightDate(index, day) && 'bg-theme-green'}
+              ${isStartDate(index, day) && 'rounded-l-md'}
+              ${isEndDate(index, day) && 'rounded-r-md'}
+              ${!isStartDate(index, day) && !isEndDate(index, day) && 'rounded-md'}`"
+            >
               <button
                 @click="handleClick(index, day)"
-                :class="`hover:bg-theme-green-hover w-full p-1 px-1.5 scroll-px-1.5 flex justify-center rounded-md font-main font-thin text-sm 
-              ${isCurrentDay(index, day) && 'border border-theme-green'}
-              ${isCurrentMonth(index, day) ? 'text-white' : 'text-soft-gray'}
-              ${isSelectedDate(index, day) && 'bg-theme-green'}`"
+                :class="`hover:bg-theme-green-hover w-full p-1 px-1.5 scroll-px-1.5 flex justify-center font-main font-thin text-sm rounded-md
+                ${isCurrentDay(index, day) && 'border border-theme-green'}
+                ${isCurrentMonth(index, day) ? 'text-white' : 'text-soft-gray'}
+              `"
               >
                 {{ day }}
               </button>

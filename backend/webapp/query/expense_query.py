@@ -3,6 +3,7 @@ from pprint import pprint
 from webapp import models
 from webapp import types
 from webapp.dto import expense
+from datetime import date
 
 
 class ExpenseQuery(graphene.ObjectType):
@@ -25,9 +26,10 @@ class ExpenseQuery(graphene.ObjectType):
             fields.remove('orderBy')
 
         # Firstly filter for time range or unit
+        # gte & lte is inclusive of range endpoints
         if len(input) > 1 and 'startDate' in fields and 'endDate' in fields:
-            result = models.Expense.objects.filter(
-                createdAt__range=(input.startDate, input.endDate))
+            result = models.Expense.objects.filter(createdAt__gte=input.startDate,
+                                                   createdAt__lte=input.endDate)
         elif listIntersection(fields, ['date', 'month', 'year']):
             timeUnit = listIntersection(fields, ['date', 'month', 'year'])[0]
             # dynamically construct filter argument

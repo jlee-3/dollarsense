@@ -25,6 +25,8 @@ import { defaultCategories } from '../data/DefaultCategories'
 import { useNotification } from '@kyvg/vue3-notification'
 const { notify } = useNotification()
 
+type DateSelectMode = 'single' | 'range'
+
 export default {
   setup() {
     const { mutate: addExpense, onDone: expenseAdded } = useMutation(addExpenseMutationGql)
@@ -129,6 +131,7 @@ export default {
       showCategoryPicker: false,
       showSubCategoryPicker: false,
       showMiniMenu: false,
+      showDatePickerMenu: false,
       showAddFilterMenu: false,
       showFilterMenu: false,
       miniMenuTop: '',
@@ -151,7 +154,8 @@ export default {
       filterMenuLeft: '',
       currentFilter: '',
       filterValues: <{ [filter: string]: string }>{},
-      inputVariables: <{ [variable: string]: string | number }>{}
+      inputVariables: <{ [variable: string]: string | number }>{},
+      datePickerMode: <DateSelectMode>'single'
     }
   },
   computed: {
@@ -424,9 +428,19 @@ export default {
         input: this.inputVariables
       })
     },
-    handleDateSelect(filter: string, value: string) {
-      this.filterValues[filter.toLowerCase()] = moment(value).format('YYYY-MM-DD')
-      this.inputVariables['date'] = moment(value).format('YYYY-MM-DD')
+    handleDateSelect(filter: string, values: { [key: string]: Date }) {
+      if (values.date) {
+        this.filterValues[filter.toLowerCase()] = moment(values.date).format('YYYY-MM-DD')
+      } else if (values.startDate && values.endDate) {
+        this.filterValues[filter.toLowerCase()] =
+          moment(values.startDate).format('YYYY-MM-DD') +
+          ' \u2192 ' +
+          moment(values.endDate).format('YYYY-MM-DD')
+      }
+
+      Object.keys(values).map((key) => {
+        this.inputVariables[key] = moment(values[key]).format('YYYY-MM-DD')
+      })
 
       this.refetchExpenses({
         input: this.inputVariables
@@ -437,6 +451,8 @@ export default {
         this.removeFilter('subCategory')
       } else if (this.currentFilter === 'createdAt') {
         this.removeFilter('date')
+        this.removeFilter('startDate')
+        this.removeFilter('endDate')
       }
 
       this.removeFilter(this.currentFilter)
@@ -449,6 +465,12 @@ export default {
       this.refetchExpenses({
         input: this.inputVariables
       })
+    },
+    handleDatePickerMenu() {
+      this.showDatePickerMenu = true
+    },
+    setDatePickerMode(mode: DateSelectMode) {
+      this.datePickerMode = mode
     }
   },
   components: {
@@ -567,19 +589,65 @@ export default {
             ${!showFilterMenu && 'opacity-0 scale-90 -z-10 invisible'}`"
           >
             <template v-slot:activator="{ onClick }">
-              <!-- <div class="flex flex-row"> -->
-              <button
-                @click="
-                  () => {
-                    onClick()
-                    handleRemoveFilter()
-                  }
-                "
-                class="my-1 ml-2 self-end"
-              >
-                <Icon icon="solar:trash-bin-trash-outline" class="text-red-500 mr-2" />
-              </button>
-              <!-- </div> -->
+              <div class="flex flex-row justify-between">
+                <div>
+                  <button
+                    @click="handleDatePickerMenu"
+                    v-if="currentFilter === 'createdAt'"
+                    class="ml-2 flex flex-row items-center text-xs pl-2.5 pr-2 p-0.5 bg-grey-pill-highlight rounded-md"
+                  >
+                    {{ 'Select' }}{{ datePickerMode && ': ' + datePickerMode }}
+                    <DownV class="ml-1" />
+                  </button>
+                  <Dropdown
+                    :is-open="showDatePickerMenu"
+                    @close="
+                      () => {
+                        showDatePickerMenu = false
+                      }
+                    "
+                    :class="`z-[12] left-2 top-6 p-2 bg-grey-pill-highlight duration-300 transition-mini-menu flex flex-col
+                    ${!showDatePickerMenu && 'opacity-0 scale-90 -z-10 invisible'}`"
+                  >
+                    <template v-slot:activator="{ onClick }">
+                      <button
+                        @click="
+                          () => {
+                            setDatePickerMode('single')
+                            onClick()
+                          }
+                        "
+                        class="text-soft-white hover:bg-theme-green-hover rounded-md p-1"
+                      >
+                        Day
+                      </button>
+                      <button
+                        @click="
+                          () => {
+                            setDatePickerMode('range')
+                            onClick()
+                          }
+                        "
+                        class="text-soft-white hover:bg-theme-green-hover rounded-md p-1"
+                      >
+                        Range
+                      </button>
+                    </template>
+                  </Dropdown>
+                </div>
+                <button
+                  @click="
+                    () => {
+                      onClick()
+                      handleRemoveFilter()
+                    }
+                  "
+                  class="my-1 ml-2 self-end"
+                >
+                  <Icon icon="solar:trash-bin-trash-outline" class="text-red-500 mr-2" />
+                </button>
+              </div>
+
               <div
                 v-if="currentFilter === 'category' || currentFilter === 'subCategory'"
                 class="ml-1 h-32 dropdown overflow-y-scroll flex flex-col"
@@ -616,10 +684,10 @@ export default {
               <DatePicker
                 v-else-if="currentFilter === 'createdAt'"
                 :input-date="date"
+                :input-mode="datePickerMode"
                 @setDate="
                   (selectedDate) => {
                     handleDateSelect('createdAt', selectedDate)
-                    onClick()
                   }
                 "
               />
@@ -651,7 +719,7 @@ export default {
                 :id="`filter:${field}`"
                 v-for="field in getFilters"
                 @click="
-                  (e) => {
+                  () => {
                     handleAddFilter(getFilterKey(field))
                     onClick()
                   }
@@ -702,7 +770,7 @@ export default {
                 <button
                   :ref="'ref:' + expense['id']"
                   v-if="column.key === 'menu'"
-                  @click="(e) => handleMiniMenuClick(e, expense['id'])"
+                  @click="(e:any) => handleMiniMenuClick(e, expense['id'])"
                   :class="`ml-2 opacity-0 rounded-md py-1 transition 
                   ${
                     ((currentId === expense['id'] && miniMenuId === '') ||
@@ -778,7 +846,7 @@ export default {
                 >
                   <button
                     @click="
-                      (e) => {
+                      () => {
                         onClick()
                         setCategory(category)
                       }
@@ -822,7 +890,7 @@ export default {
                 >
                   <button
                     @click="
-                      (e) => {
+                      () => {
                         onClick()
                         setSubCategory(subCategory)
                       }
