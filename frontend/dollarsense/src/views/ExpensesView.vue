@@ -445,6 +445,17 @@ export default {
         this.inputVariables[key] = moment(values[key]).format('YYYY-MM-DD')
       })
 
+      // ensure only single type of active date filter
+      if (!Object.keys(values).includes('date')) {
+        delete this.inputVariables['date']
+      } else if (
+        !Object.keys(values).includes('startDate') ||
+        !Object.keys(values).includes('endDate')
+      ) {
+        delete this.inputVariables['startDate']
+        delete this.inputVariables['endDate']
+      }
+
       this.refetchExpenses({
         input: this.inputVariables
       })
