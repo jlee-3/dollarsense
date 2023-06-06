@@ -124,6 +124,22 @@ export default {
         this.isSelectingRange = false
       }
     },
+    handleClickMonth(monthIndex: number) {
+      this.changeMonth(monthIndex)
+
+      if (this.inputMode !== 'month') {
+        this.view = 'calendar'
+      } else {
+        this.startDate = new Date(this.currentDate?.setDate(1))
+        this.endDate = new Date(this.getYearIndex, monthIndex + 1)
+        this.endDate = new Date(this.endDate?.setDate(-0.5))
+
+        this.$emit('setDate', {
+          startDate: this.startDate,
+          endDate: this.endDate
+        })
+      }
+    },
     getMonthFromGrid(row: number, day: number) {
       let month = this.getMonthIndex
       if (row === 0 && day > 7) {
@@ -184,7 +200,7 @@ export default {
         this.startDate &&
         this.endDate &&
         this.getDateFromGrid(day).valueOf() > this.startDate.valueOf() &&
-        this.getDateFromGrid(day + 1).valueOf() < this.endDate.valueOf()
+        this.getDateFromGrid(day + 1).valueOf() <= this.endDate.valueOf()
       )
     },
     changeMonth(month: number) {
@@ -214,6 +230,15 @@ export default {
     },
     scrollToElement(year: string) {
       document.getElementById('y' + year)?.scrollIntoView()
+    }
+  },
+  watch: {
+    inputMode: function (mode) {
+      if (mode === 'month') {
+        this.setView('month')
+      } else {
+        this.setView('calendar')
+      }
     }
   },
   components: {
@@ -305,6 +330,7 @@ export default {
     ${view !== 'month' && 'opacity-0 invisible -z-10 -translate-y-6'}`"
     >
       <button
+        v-if="inputMode !== 'month'"
         @click="() => setView('calendar')"
         class="hover:bg-theme-green-hover p-1 py-2 rounded-md"
       >
@@ -314,8 +340,7 @@ export default {
         <button
           @click="
             () => {
-              changeMonth(index)
-              view = 'calendar'
+              handleClickMonth(index)
             }
           "
           v-for="index in [...Array(12).keys()]"

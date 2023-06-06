@@ -25,7 +25,7 @@ import { defaultCategories } from '../data/DefaultCategories'
 import { useNotification } from '@kyvg/vue3-notification'
 const { notify } = useNotification()
 
-type DateSelectMode = 'single' | 'range'
+type DateSelectMode = 'single' | 'month' | 'range'
 
 export default {
   setup() {
@@ -104,6 +104,8 @@ export default {
       }
     ]
 
+    const dateSelectModes: DateSelectMode[] = ['single', 'month', 'range']
+
     const date = ref(new Date())
     const filterDate = ref(new Date())
     const amountRef = ref()
@@ -119,7 +121,8 @@ export default {
       filterDate,
       amountRef,
       defaultCategories,
-      refetchExpenses
+      refetchExpenses,
+      dateSelectModes
     }
   },
   data() {
@@ -612,26 +615,16 @@ export default {
                   >
                     <template v-slot:activator="{ onClick }">
                       <button
+                        v-for="mode in dateSelectModes"
                         @click="
                           () => {
-                            setDatePickerMode('single')
+                            setDatePickerMode(mode)
                             onClick()
                           }
                         "
                         class="text-soft-white hover:bg-theme-green-hover rounded-md p-1"
                       >
-                        Day
-                      </button>
-                      <button
-                        @click="
-                          () => {
-                            setDatePickerMode('range')
-                            onClick()
-                          }
-                        "
-                        class="text-soft-white hover:bg-theme-green-hover rounded-md p-1"
-                      >
-                        Range
+                        {{ capitalizeFirstLetter(mode) }}
                       </button>
                     </template>
                   </Dropdown>
