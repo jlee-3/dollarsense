@@ -16,6 +16,7 @@ import Datepicker from 'vue3-datepicker'
 import CalendarIcon from '../components/icons/IconCalendar.vue'
 import TimePicker from '../components/TimePicker.vue'
 import DatePicker from '../components/DatePicker.vue'
+import RangeSlider from '../components/RangeSlider.vue'
 import Close from '../components/icons/IconClose.vue'
 import DownV from '../components/icons/IconDownV.vue'
 import CircleCheck from '../components/icons/IconCircleCheck.vue'
@@ -26,6 +27,7 @@ import { useNotification } from '@kyvg/vue3-notification'
 const { notify } = useNotification()
 
 type DateSelectMode = 'single' | 'month' | 'range'
+type AmountSelectMode = 'single' | 'range'
 
 export default {
   setup() {
@@ -105,6 +107,7 @@ export default {
     ]
 
     const dateSelectModes: DateSelectMode[] = ['single', 'month', 'range']
+    const amountSelectModes: AmountSelectMode[] = ['single', 'range']
 
     const date = ref(new Date())
     const filterDate = ref(new Date())
@@ -122,7 +125,8 @@ export default {
       amountRef,
       defaultCategories,
       refetchExpenses,
-      dateSelectModes
+      dateSelectModes,
+      amountSelectModes
     }
   },
   data() {
@@ -500,7 +504,8 @@ export default {
     CircleCheck,
     Icon,
     CurrencyPicker,
-    DatePicker
+    DatePicker,
+    RangeSlider
   }
 }
 </script>
@@ -601,14 +606,15 @@ export default {
             "
             :style="{ left: filterMenuLeft + 'px' }"
             :class="`top-10 p-2 duration-300 transition-mini-menu flex flex-col
-            ${!showFilterMenu && 'opacity-0 scale-90 -z-10 invisible'}`"
+            ${!showFilterMenu && 'opacity-0 scale-90 -z-10 invisible'}
+            ${currentFilter === 'amount' && 'min-w-[200px]'}`"
           >
             <template v-slot:activator="{ onClick }">
               <div class="flex flex-row justify-between">
                 <div>
                   <button
                     @click="handleDatePickerMenu"
-                    v-if="currentFilter === 'createdAt'"
+                    v-if="currentFilter === 'createdAt' || currentFilter === 'amount'"
                     class="ml-2 flex flex-row items-center text-xs pl-2.5 pr-2 p-0.5 bg-grey-pill-highlight rounded-md"
                   >
                     {{ 'Select' }}{{ datePickerMode && ': ' + datePickerMode }}
@@ -626,7 +632,21 @@ export default {
                   >
                     <template v-slot:activator="{ onClick }">
                       <button
+                        v-if="currentFilter === 'createdAt'"
                         v-for="mode in dateSelectModes"
+                        @click="
+                          () => {
+                            setDatePickerMode(mode)
+                            onClick()
+                          }
+                        "
+                        class="text-soft-white hover:bg-theme-green-hover rounded-md p-1"
+                      >
+                        {{ capitalizeFirstLetter(mode) }}
+                      </button>
+                      <button
+                        v-if="currentFilter === 'amount'"
+                        v-for="mode in amountSelectModes"
                         @click="
                           () => {
                             setDatePickerMode(mode)
@@ -696,6 +716,7 @@ export default {
                   }
                 "
               />
+              <RangeSlider v-else-if="currentFilter === 'amount'" />
             </template>
           </Dropdown>
         </div>
