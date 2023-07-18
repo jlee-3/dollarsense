@@ -162,12 +162,19 @@ export default {
       currentFilter: '',
       filterValues: <{ [filter: string]: string }>{},
       inputVariables: <{ [variable: string]: string | number }>{},
-      datePickerMode: <DateSelectMode>'single'
+      datePickerMode: <DateSelectMode>'single',
+      maxRange: 0,
+      minRange: 0
     }
   },
   computed: {
     getCurrentTime() {
       return moment().format('LT')
+    },
+    getAmounts() {
+      return this.expenses.map((expense) => {
+        return expense.amount
+      })
     },
     getFilters() {
       let formattedFilters = this.columns.filter(
@@ -490,6 +497,20 @@ export default {
     },
     setDatePickerMode(mode: DateSelectMode) {
       this.datePickerMode = mode
+    },
+    handleRangeSelect(selectedRange: any) {
+      const { valueLeft, valueRight } = selectedRange
+      const maxAmount = Math.max.apply(null, this.getAmounts)
+      const minAmount = Math.min.apply(null, this.getAmounts)
+      this.maxRange = minAmount + Math.round((valueRight * (maxAmount - minAmount)) / 100)
+      this.minRange = minAmount + Math.round((valueLeft * (maxAmount - minAmount)) / 100)
+    }
+  },
+  watch: {
+    getAmounts: function (amount) {
+      if (this.maxRange === 0 && this.minRange === 0) {
+        this.handleRangeSelect({ valueLeft: 0, valueRight: 50 })
+      }
     }
   },
   components: {
@@ -716,7 +737,20 @@ export default {
                   }
                 "
               />
-              <RangeSlider v-else-if="currentFilter === 'amount'" />
+              <div v-else-if="currentFilter === 'amount'">
+                <div class="flex row justify-between">
+                  <p>{{ minRange }}</p>
+                  <p>{{ maxRange }}</p>
+                </div>
+                <RangeSlider
+                  :amounts="getAmounts"
+                  @setRange="
+                    (selectedRange) => {
+                      handleRangeSelect(selectedRange)
+                    }
+                  "
+                />
+              </div>
             </template>
           </Dropdown>
         </div>

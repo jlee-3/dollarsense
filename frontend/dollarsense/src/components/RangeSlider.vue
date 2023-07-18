@@ -1,9 +1,12 @@
 <script lang="ts">
 export default {
-  // props: {},
-  // setup(props) {
-  //   return {}
-  // },
+  props: {
+    amounts: Object
+  },
+  setup(props) {
+    // console.log('[setup] amounts: ', props.amounts)
+    return {}
+  },
   data() {
     return {
       valueLeft: 0,
@@ -26,10 +29,15 @@ export default {
       ) {
         this.valueLeft = this.getBuffer(undefined, this.valueRight)
       }
+
+      this.$emit('setRange', {
+        valueLeft: this.valueLeft,
+        valueRight: this.valueRight
+      })
     },
     getBuffer(valueLeft?: number, valueRight?: number) {
       const value = valueLeft ?? valueRight
-      return valueLeft ? Number(value) + Number(14) : Number(value) - Number(14)
+      return valueLeft ? Number(value) + Number(10) : Number(value) - Number(10)
     }
   },
   components: {}
@@ -37,13 +45,13 @@ export default {
 </script>
 
 <template>
-  <div class="my-5 mx-2 bg-theme-green-hover h-[10px] rounded-lg">
+  <div class="my-2 mx-2 bg-theme-green-hover h-[5px] rounded-lg">
     <span
       :style="{
         width: valueRight - valueLeft + '%',
         left: valueLeft + '%'
       }"
-      :class="`rounded-lg flex h-[10px] bg-theme-green
+      :class="`rounded-lg flex h-[5px] bg-theme-green
       `"
     >
     </span>
