@@ -57,7 +57,7 @@ export default {
     </span>
     <input
       id="sliderLeft"
-      @input="handleSlide"
+      @click.stop="handleSlide"
       type="range"
       :min="0"
       :max="100"
@@ -67,7 +67,7 @@ export default {
     />
     <input
       id="sliderRight"
-      @input="handleSlide"
+      @click.stop="handleSlide"
       type="range"
       :min="0"
       :max="100"

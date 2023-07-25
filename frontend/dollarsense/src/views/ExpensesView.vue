@@ -434,7 +434,7 @@ export default {
       const refLeft = ref[0].offsetLeft
       this.filterMenuLeft = refLeft
     },
-    handleFilterSelect(filter: string, value: string) {
+    handleCategorySelect(filter: string, value: string) {
       this.filterValues[filter.toLowerCase()] = value
       this.inputVariables[this.lowerFirstLetter(filter)] = this.capitalizeFirstLetter(value)
 
@@ -701,7 +701,7 @@ export default {
                 <button
                   @click="
                     () => {
-                      handleFilterSelect('Category', category)
+                      handleCategorySelect('Category', category)
                       onClick()
                     }
                   "
@@ -715,7 +715,7 @@ export default {
                 <button
                   @click="
                     () => {
-                      handleFilterSelect('subCategory', subCategory)
+                      handleCategorySelect('subCategory', subCategory)
                       onClick()
                     }
                   "
