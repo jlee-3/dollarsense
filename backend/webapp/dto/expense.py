@@ -38,4 +38,6 @@ class ExpenseQueryInput(graphene.InputObjectType):
     year = graphene.String(required=False)
     startDate = graphene.Date(required=False)
     endDate = graphene.Date(required=False)
+    minRange = graphene.Float(required=False)
+    maxRange = graphene.Float(required=False)
     orderBy = graphene.String(required=False)

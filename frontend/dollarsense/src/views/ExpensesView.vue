@@ -163,6 +163,8 @@ export default {
       filterValues: <{ [filter: string]: string }>{},
       inputVariables: <{ [variable: string]: string | number }>{},
       datePickerMode: <DateSelectMode>'single',
+      maxAmount: 0,
+      minAmount: 0,
       maxRange: 0,
       minRange: 0
     }
@@ -500,16 +502,30 @@ export default {
     },
     handleRangeSelect(selectedRange: any) {
       const { valueLeft, valueRight } = selectedRange
-      const maxAmount = Math.max.apply(null, this.getAmounts)
-      const minAmount = Math.min.apply(null, this.getAmounts)
-      this.maxRange = minAmount + Math.round((valueRight * (maxAmount - minAmount)) / 100)
-      this.minRange = minAmount + Math.round((valueLeft * (maxAmount - minAmount)) / 100)
+
+      this.maxRange =
+        this.minAmount + Math.round((valueRight * (this.maxAmount - this.minAmount)) / 100)
+      this.minRange =
+        this.minAmount + Math.round((valueLeft * (this.maxAmount - this.minAmount)) / 100)
+
+      this.inputVariables['minRange'] = this.minRange
+      this.inputVariables['maxRange'] = this.maxRange
+
+      if (!(this.maxRange === 0 && this.minRange === 0)) {
+        this.refetchExpenses({
+          input: this.inputVariables
+        })
+      }
     }
   },
   watch: {
     getAmounts: function (amount) {
       if (this.maxRange === 0 && this.minRange === 0) {
         this.handleRangeSelect({ valueLeft: 0, valueRight: 50 })
+        this.maxAmount = Math.max.apply(null, this.getAmounts)
+        this.minAmount = Math.min.apply(null, this.getAmounts)
+        this.maxRange = this.maxAmount
+        this.minRange = this.minAmount
       }
     }
   },

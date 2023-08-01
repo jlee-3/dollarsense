@@ -30,6 +30,11 @@ class ExpenseQuery(graphene.ObjectType):
         if len(input) > 1 and 'startDate' in fields and 'endDate' in fields:
             result = models.Expense.objects.filter(createdAt__gte=input.startDate,
                                                    createdAt__lte=input.endDate)
+
+        elif len(input) > 1 and 'minRange' in fields and 'maxRange' in fields:
+            result = models.Expense.objects.filter(amount__gte=input.minRange,
+                                                   amount__lte=input.maxRange)
+
         elif listIntersection(fields, ['date', 'month', 'year']):
             timeUnit = listIntersection(fields, ['date', 'month', 'year'])[0]
             # dynamically construct filter argument
