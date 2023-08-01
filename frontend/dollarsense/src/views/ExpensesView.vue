@@ -113,6 +113,9 @@ export default {
     const filterDate = ref(new Date())
     const amountRef = ref()
 
+    const defaultSliderLeft = 0
+    const defaultSliderRight = 50
+
     return {
       loading,
       expenses,
@@ -126,7 +129,9 @@ export default {
       defaultCategories,
       refetchExpenses,
       dateSelectModes,
-      amountSelectModes
+      amountSelectModes,
+      defaultSliderLeft,
+      defaultSliderRight
     }
   },
   data() {
@@ -429,7 +434,10 @@ export default {
       this.filters.add(filter)
 
       if (filter === 'amount') {
-        this.handleRangeSelect({ valueLeft: 0, valueRight: 50 })
+        this.handleRangeSelect({
+          valueLeft: this.defaultSliderLeft,
+          valueRight: this.defaultSliderRight
+        })
       }
     },
     handleFilterMenuClick(filter: string) {
@@ -525,7 +533,11 @@ export default {
   watch: {
     getAmounts: function (amount) {
       if (this.maxRange === 0 && this.minRange === 0) {
-        this.handleRangeSelect({ valueLeft: 0, valueRight: 50 })
+        this.handleRangeSelect({
+          valueLeft: this.defaultSliderLeft,
+          valueRight: this.defaultSliderRight
+        })
+
         this.maxAmount = Math.max.apply(null, this.getAmounts)
         this.minAmount = Math.min.apply(null, this.getAmounts)
         this.maxRange = this.maxAmount
@@ -764,6 +776,8 @@ export default {
                 </div>
                 <RangeSlider
                   :amounts="getAmounts"
+                  :default-left="defaultSliderLeft"
+                  :default-right="defaultSliderRight"
                   @setRange="
                     (selectedRange) => {
                       handleRangeSelect(selectedRange)

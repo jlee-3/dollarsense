@@ -1,7 +1,9 @@
 <script lang="ts">
 export default {
   props: {
-    amounts: Object
+    amounts: Object,
+    defaultLeft: Number,
+    defaultRight: Number
   },
   setup(props) {
     // console.log('[setup] amounts: ', props.amounts)
@@ -9,8 +11,8 @@ export default {
   },
   data() {
     return {
-      valueLeft: 0,
-      valueRight: 50
+      valueLeft: this.$props.defaultLeft || 0,
+      valueRight: this.$props.defaultRight || 50
     }
   },
   computed: {},
