@@ -15,7 +15,13 @@ export default {
   },
   computed: {},
   methods: {
-    handleSlide(event: any) {
+    setRange() {
+      this.$emit('setRange', {
+        valueLeft: this.valueLeft,
+        valueRight: this.valueRight
+      })
+    },
+    handleSlideBuffer(event: any) {
       const sliderId = event.target.id
 
       if (
@@ -29,11 +35,6 @@ export default {
       ) {
         this.valueLeft = this.getBuffer(undefined, this.valueRight)
       }
-
-      this.$emit('setRange', {
-        valueLeft: this.valueLeft,
-        valueRight: this.valueRight
-      })
     },
     getBuffer(valueLeft?: number, valueRight?: number) {
       const value = valueLeft ?? valueRight
@@ -57,7 +58,8 @@ export default {
     </span>
     <input
       id="sliderLeft"
-      @click.stop="handleSlide"
+      @click.stop="setRange"
+      @input="handleSlideBuffer"
       type="range"
       :min="0"
       :max="100"
@@ -67,7 +69,8 @@ export default {
     />
     <input
       id="sliderRight"
-      @click.stop="handleSlide"
+      @click.stop="setRange"
+      @input="handleSlideBuffer"
       type="range"
       :min="0"
       :max="100"
