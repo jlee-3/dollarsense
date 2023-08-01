@@ -427,6 +427,10 @@ export default {
     },
     handleAddFilter(filter: string) {
       this.filters.add(filter)
+
+      if (filter === 'amount') {
+        this.handleRangeSelect({ valueLeft: 0, valueRight: 50 })
+      }
     },
     handleFilterMenuClick(filter: string) {
       this.showFilterMenu = true
