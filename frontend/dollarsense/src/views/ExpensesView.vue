@@ -220,7 +220,7 @@ export default {
     handleOpenExpenseModal() {
       this.showModal = true
     },
-    sanitizeExpenseInput(input: Ds.Expense) {
+    validateExpenseInput(input: Ds.Expense) {
       const { description, amount, category } = input
 
       if (!description || !amount || !category) {
@@ -246,7 +246,7 @@ export default {
 
       return new Date(dateTime)
     },
-    handleSaveExpense() {
+    async handleSaveExpense() {
       console.log('[handleAddExpense] adding expense!')
       console.log('[handleAddExpense] currentCategory: ', this.currentCategory)
       console.log('[handleAddExpense] currentSubCategory: ', this.currentSubCategory)
@@ -268,9 +268,11 @@ export default {
         createdAt: this.calculateDate()
       }
 
-      if (this.sanitizeExpenseInput(expenseInput)) {
+      if (this.validateExpenseInput(expenseInput)) {
+        let mutateExpenseStatus
+
         if (this.isEdit) {
-          this.editExpense({
+          mutateExpenseStatus = await this.editExpense({
             input: {
               id: this.currentEditId,
               ...expenseInput
@@ -284,7 +286,7 @@ export default {
             text: 'Successfully Edited!'
           })
         } else {
-          this.addExpense({
+          mutateExpenseStatus = await this.addExpense({
             input: expenseInput
           })
 
