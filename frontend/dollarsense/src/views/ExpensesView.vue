@@ -522,8 +522,10 @@ export default {
       this.minRange =
         this.minAmount + Math.round((valueLeft * (this.maxAmount - this.minAmount)) / 100)
 
-      this.inputVariables['minRange'] = this.minRange
-      this.inputVariables['maxRange'] = this.maxRange
+      if (this.filters.has('amount')) {
+        this.inputVariables['minRange'] = this.minRange
+        this.inputVariables['maxRange'] = this.maxRange
+      }
 
       if (!(this.maxRange === 0 && this.minRange === 0)) {
         this.refetchExpenses({
