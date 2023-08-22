@@ -14,7 +14,16 @@ module.exports = {
         'theme-green-highlight': '#00ECD0',
         'theme-orange': '#E1522B',
         'soft-white': '#D6D6D6',
-        'soft-gray': '#989898'
+        'soft-gray': '#989898',
+        bg: {
+          olive: '#2B3532'
+        },
+        category: {
+          1: 'var(--category-1)',
+          2: 'var(--category-2)',
+          3: 'var(--category-3)',
+          4: 'var(--category-4)'
+        }
       }
     },
     fontFamily: {

@@ -1,9 +1,8 @@
 <script lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
-import ExpensesList from '../components/ExpensesList.vue'
 import { useQuery, useMutation } from '@vue/apollo-composable'
 import { expenseQueryGql, addExpenseMutationGql } from '../graphql/queries'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+import CategoriesPie from '../components/CategoriesPie.vue'
 
 export default {
   setup() {
@@ -26,10 +25,15 @@ export default {
     expenseAdded(() => {
       refetchExpenses()
     })
+
+    // const categoryPercentages = [50, 20, 10, 5, 15]
+    const categoryPercentages = [30, 28, 15, 10, 27]
+
     return {
       loading,
       allExpenses,
-      addExpense
+      addExpense,
+      categoryPercentages
     }
   },
   methods: {
@@ -46,7 +50,8 @@ export default {
     }
   },
   components: {
-    ExpensesList
+    // ExpensesList
+    CategoriesPie
   }
 }
 </script>
@@ -54,8 +59,19 @@ export default {
 <template>
   <main class="bg-dark-background w-screen p-14">
     <!-- <TheWelcome /> -->
-    <h1>Dashboard</h1>
+    <!-- <h1>Dashboard</h1>
     <button @click="handleAddExpense" class="bg-lime-500 text-teal-50">Add expense!</button>
-    <ExpensesList :loading="loading" :allExpenses="allExpenses" />
+    <ExpensesList :loading="loading" :allExpenses="allExpenses" /> -->
+    <div class="flex h-full">
+      <div class="w-3/5 rounded-lg bg-grey-bubble"></div>
+      <div class="flex flex-col items-center pt-14 ml-14 w-2/5 rounded-lg bg-grey-bubble">
+        <CategoriesPie
+          :inputPercentages="categoryPercentages"
+          label="Total Expenses"
+          :value="11050"
+          currency="NTD"
+        />
+      </div>
+    </div>
   </main>
 </template>

@@ -1,4 +1,6 @@
 @tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Edit scrollbar. See https://scottspence.com/posts/change-scrollbar-color-tailwind-css */
 /* Firefox */
@@ -41,9 +43,6 @@
   background: #38363e;
   /* border-radius: 5px; */
 }
-
-@tailwind components;
-@tailwind utilities;
 
 @layer components {
   .line-gradient-gray {
@@ -104,4 +103,11 @@
   cursor: pointer; /* Cursor on hover */
   border-radius: 50%;
   pointer-events: auto;
+}
+
+:root {
+  --category-1: #5f12a7;
+  --category-2: #9747ff;
+  --category-3: #5456be;
+  --category-4: #5b9cd4;
 }
